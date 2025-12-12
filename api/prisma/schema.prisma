@@ -1,0 +1,111 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     Int                  @id @default(autoincrement())
+  nom                    String
+  prenom                 String
+  email                  String               @unique
+  adresse                String
+  telephone              String               @unique
+  motDePasse             String
+  sexe                   String?
+  roleId                 Int
+  resetPasswordToken     String?
+  resetPasswordExpires   DateTime?
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+  role                   Role                 @relation(fields: [roleId], references: [id])
+  contacts               Contact[]
+  sentMessages           HistoriqueMessage[]  @relation("SentMessages")
+  receivedMessages       HistoriqueMessage[]  @relation("ReceivedMessages")
+  notifications          Notification[]
+  sharedContacts         SharedContact[]      @relation("UserSharedContacts")
+  receivedShares         SharedContact[]      @relation("RecipientSharedContacts")
+}
+
+model Role {
+  id          Int          @id @default(autoincrement())
+  nomRole     String       @unique
+  description String?
+  createdAt   DateTime     @default(now())
+  users       User[]
+  permissions Permission[]
+}
+
+model Permission {
+  id             Int      @id @default(autoincrement())
+  nomPermission  String   @unique
+  description    String?
+  createdAt      DateTime @default(now())
+  roles          Role[]
+}
+
+model Contact {
+  id             Int       @id @default(autoincrement())
+  nom            String
+  prenom         String
+  telephone      String
+  email          String?
+  adresse        String?
+  fonction       String?
+  organisation   String?
+  notes          String?
+  categorieId    Int?
+  userId         Int
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categorie      Categorie? @relation(fields: [categorieId], references: [id])
+  sharedContacts SharedContact[]
+}
+
+model Categorie {
+  id            Int       @id @default(autoincrement())
+  nomCategorie  String    @unique
+  description   String?
+  createdAt     DateTime  @default(now())
+  contacts      Contact[]
+}
+
+model HistoriqueMessage {
+  id               Int      @id @default(autoincrement())
+  typeMessage      String   // "text", "contact", "file"
+  contenu          String
+  dateEnvoi        DateTime @default(now())
+  lu               Boolean  @default(false)
+  senderId         Int
+  receiverId       Int
+  deletedBySender   Boolean  @default(false)
+  deletedByReceiver Boolean  @default(false)
+  sender           User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver         User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  message   String
+  date      DateTime @default(now())
+  lu        Boolean  @default(false)
+  userId    Int
+  type      String   @default("info") // "info", "success", "warning", "error"
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SharedContact {
+  id          Int      @id @default(autoincrement())
+  contactId   Int
+  userId      Int      // User who shared
+  recipientId Int      // User who received the share
+  platform    String   // "whatsapp", "telegram", "facebook", "linkedin", "instagram", "internal"
+  sharedAt    DateTime @default(now())
+  contact     Contact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  user        User     @relation("UserSharedContacts", fields: [userId], references: [id])
+  recipient   User     @relation("RecipientSharedContacts", fields: [recipientId], references: [id])
+}
