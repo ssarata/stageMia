@@ -16,13 +16,13 @@ const getResendInstance = (): Resend => {
 
 interface ContactData {
   nom: string;
-  prenom: string;
+  prenom: string | null;
   telephone: string;
-  email?: string;
-  adresse?: string;
-  fonction?: string;
-  organisation?: string;
-  notes?: string;
+  email?: string | null;
+  adresse?: string | null;
+  fonction?: string | null;
+  organisation?: string | null;
+  notes?: string | null;
 }
 
 /**
