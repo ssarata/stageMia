@@ -46,5 +46,10 @@ npx prisma migrate deploy
 
 echo "✅ Migrations completed!"
 
+echo "🌱 Running database seeders..."
+npm run seed || echo "⚠️  Seeder failed or already run"
+
+echo "✅ Seeders completed!"
+
 echo "🚀 Starting application..."
 node dist/index.js
