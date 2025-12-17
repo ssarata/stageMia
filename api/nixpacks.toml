@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs_20", "npm"]
+
+[phases.install]
+cmds = ["echo 'Skipping install phase - will be handled by start.sh'"]
+
+[phases.build]
+cmds = ["echo 'Skipping build phase - will be handled by start.sh'"]
+
+[start]
+cmd = "bash start.sh"
