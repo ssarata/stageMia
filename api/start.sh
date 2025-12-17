@@ -13,6 +13,19 @@ if [ -z "$DATABASE_URL" ]; then
 fi
 
 echo "✅ DATABASE_URL is configured"
+
+# Vérifier les autres variables critiques
+if [ -z "$JWT_SECRET" ]; then
+  echo "⚠️  WARNING: JWT_SECRET is not set! Using default (NOT SECURE)"
+  export JWT_SECRET="default_secret_please_change"
+fi
+
+if [ -z "$NODE_ENV" ]; then
+  echo "⚠️  WARNING: NODE_ENV is not set! Using 'production'"
+  export NODE_ENV="production"
+fi
+
+echo "✅ Environment variables checked"
 echo "📦 Installing dependencies..."
 npm install --production=false
 
