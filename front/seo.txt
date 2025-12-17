@@ -1,0 +1,393 @@
+<!-- --------------------------- SEO ---------------------------  -->
+
+
+<!-- <!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    
+    <!-- SEO Basique -->
+    <!-- <title>Titre Descriptif de Votre Site - Mots-clés Principaux</title>
+    <meta name="description" content="Description accrocheuse de 150-160 caractères qui donne envie de cliquer et contient vos mots-clés principaux." />
+    <meta name="keywords" content="mot-clé1, mot-clé2, mot-clé3" />
+    <meta name="author" content="Votre Nom" />
+    <link rel="canonical" href="https://votresite.com/" /> -->
+    
+    <!-- Robots -->
+    <!-- <meta name="robots" content="index, follow" /> -->
+    
+    <!-- Favicon -->
+    <!-- <link rel="icon" type="image/png" href="/avatar1.png" /> -->
+    
+    <!-- Open Graph / Facebook -->
+    <!-- <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://votresite.com/" />
+    <meta property="og:title" content="Titre Descriptif de Votre Site" />
+    <meta property="og:description" content="Description accrocheuse pour les réseaux sociaux" />
+    <meta property="og:image" content="https://votresite.com/og-image.jpg" />
+    <meta property="og:locale" content="fr_FR" />
+     -->
+    <!-- Twitter -->
+    <!-- <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://votresite.com/" />
+    <meta name="twitter:title" content="Titre Descriptif de Votre Site" />
+    <meta name="twitter:description" content="Description accrocheuse pour Twitter" />
+    <meta name="twitter:image" content="https://votresite.com/twitter-image.jpg" /> -->
+    
+    <!-- Theme Color -->
+    <!-- <meta name="theme-color" content="#ffffff" /> -->
+    
+    <!-- JSON-LD Structured Data -->
+    <!-- <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Nom de Votre Site",
+      "url": "https://votresite.com",
+      "description": "Description de votre site"
+    }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html> -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// routes/_public.tsx - Layout avec modal de connexion
+// import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
+// import { useState } from "react";
+// import LoginForm from "../auth/LoginForm";
+// import { useLogin } from "../hooks/authUser";
+
+// export const Route = createFileRoute("/_public")({
+//   component: PublicLayout,
+// });
+
+// function PublicLayout() {
+//   const { auth } = Route.useRouteContext();
+//   const navigate = useNavigate();
+//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  
+//   const { mutate: login, isPending } = useLogin();
+
+//   const handleLogout = () => {
+//     auth.logout();
+//     setIsMenuOpen(false);
+//   };
+
+//   const handleLogin = (data: { email: string; password: string }) => {
+//     login(data, {
+//       onSuccess: () => {
+//         setIsLoginModalOpen(false);
+//         navigate({ to: "/dashboard" });
+//       },
+//     });
+//   };
+
+//   return (
+//     <div className="min-h-screen flex flex-col">
+//       {/* NAVBAR - Toujours visible */}
+//       <header className="bg-white shadow-md sticky top-0 z-50">
+//         <nav className="max-w-7xl mx-auto px-4 py-4">
+//           <div className="flex justify-between items-center">
+//             {/* Logo */}
+//             <Link to="/" className="flex items-center gap-2">
+//               <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+//                 <span className="text-white font-bold text-xl">L</span>
+//               </div>
+//               <span className="text-2xl font-bold text-gray-900">Mon App</span>
+//             </Link>
+
+//             {/* Navigation Links */}
+//             <div className="flex items-center gap-6">
+//               <Link
+//                 to="/"
+//                 className="text-gray-700 hover:text-blue-600 font-medium transition"
+//                 activeProps={{ className: "text-blue-600" }}
+//               >
+//                 Accueil
+//               </Link>
+//               <Link
+//                 to="/about"
+//                 className="text-gray-700 hover:text-blue-600 font-medium transition"
+//                 activeProps={{ className: "text-blue-600" }}
+//               >
+//                 À propos
+//               </Link>
+//               <Link
+//                 to="/contact"
+//                 className="text-gray-700 hover:text-blue-600 font-medium transition"
+//                 activeProps={{ className: "text-blue-600" }}
+//               >
+//                 Contact
+//               </Link>
+
+//               {/* Affichage conditionnel : Connexion ou Dropdown utilisateur */}
+//               {auth.isAuthenticated ? (
+//                 // Dropdown utilisateur (si connecté)
+//                 <div className="relative">
+//                   <button
+//                     onClick={() => setIsMenuOpen(!isMenuOpen)}
+//                     className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition"
+//                   >
+//                     {/* Avatar */}
+//                     <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+//                       <span className="text-white font-bold text-sm">
+//                         {auth.user?.name?.charAt(0).toUpperCase() || "U"}
+//                       </span>
+//                     </div>
+//                     <span className="font-medium text-gray-700">
+//                       {auth.user?.name || "Utilisateur"}
+//                     </span>
+//                     {/* Icône dropdown */}
+//                     <svg
+//                       className={`w-4 h-4 text-gray-600 transition-transform ${
+//                         isMenuOpen ? "rotate-180" : ""
+//                       }`}
+//                       fill="none"
+//                       stroke="currentColor"
+//                       viewBox="0 0 24 24"
+//                     >
+//                       <path
+//                         strokeLinecap="round"
+//                         strokeLinejoin="round"
+//                         strokeWidth={2}
+//                         d="M19 9l-7 7-7-7"
+//                       />
+//                     </svg>
+//                   </button>
+
+//                   {/* Dropdown */}
+//                   {isMenuOpen && (
+//                     <>
+//                       <div
+//                         className="fixed inset-0 z-10"
+//                         onClick={() => setIsMenuOpen(false)}
+//                       />
+//                       <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+//                         <div className="px-4 py-3 border-b border-gray-200">
+//                           <p className="text-sm font-semibold text-gray-900">
+//                             {auth.user?.name || "Utilisateur"}
+//                           </p>
+//                           <p className="text-sm text-gray-500 truncate">
+//                             {auth.user?.email || "email@example.com"}
+//                           </p>
+//                         </div>
+
+//                         <Link
+//                           to="/dashboard"
+//                           onClick={() => setIsMenuOpen(false)}
+//                           className="flex items-center gap-3 px-4 py-2 text-gray-700 hover:bg-gray-50 transition"
+//                         >
+//                           <svg
+//                             className="w-5 h-5 text-gray-500"
+//                             fill="none"
+//                             stroke="currentColor"
+//                             viewBox="0 0 24 24"
+//                           >
+//                             <path
+//                               strokeLinecap="round"
+//                               strokeLinejoin="round"
+//                               strokeWidth={2}
+//                               d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+//                             />
+//                           </svg>
+//                           <span className="font-medium">Dashboard</span>
+//                         </Link>
+
+//                         <div className="border-t border-gray-200 my-2" />
+
+//                         <button
+//                           onClick={handleLogout}
+//                           className="flex items-center gap-3 w-full px-4 py-2 text-red-600 hover:bg-red-50 transition"
+//                         >
+//                           <svg
+//                             className="w-5 h-5"
+//                             fill="none"
+//                             stroke="currentColor"
+//                             viewBox="0 0 24 24"
+//                           >
+//                             <path
+//                               strokeLinecap="round"
+//                               strokeLinejoin="round"
+//                               strokeWidth={2}
+//                               d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+//                             />
+//                           </svg>
+//                           <span className="font-medium">Déconnexion</span>
+//                         </button>
+//                       </div>
+//                     </>
+//                   )}
+//                 </div>
+//               ) : (
+//                 // Bouton connexion - Ouvre le modal
+//                 <button
+//                   onClick={() => setIsLoginModalOpen(true)}
+//                   className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+//                 >
+//                   Connexion
+//                 </button>
+//               )}
+//             </div>
+//           </div>
+//         </nav>
+//       </header>
+
+//       {/* CONTENU PRINCIPAL */}
+//       <main className="flex-1">
+//         <Outlet />
+//       </main>
+
+//       {/* FOOTER */}
+//       <footer className="bg-gray-900 text-white">
+//         <div className="max-w-7xl mx-auto px-4 py-8">
+//           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+//             <div>
+//               <h3 className="text-lg font-bold mb-4">Mon App</h3>
+//               <p className="text-gray-400">
+//                 Une application moderne et innovante pour vos besoins.
+//               </p>
+//             </div>
+
+//             <div>
+//               <h3 className="text-lg font-bold mb-4">Liens rapides</h3>
+//               <ul className="space-y-2">
+//                 <li>
+//                   <Link
+//                     to="/"
+//                     className="text-gray-400 hover:text-white transition"
+//                   >
+//                     Accueil
+//                   </Link>
+//                 </li>
+//                 <li>
+//                   <Link
+//                     to="/about"
+//                     className="text-gray-400 hover:text-white transition"
+//                   >
+//                     À propos
+//                   </Link>
+//                 </li>
+//                 <li>
+//                   <Link
+//                     to="/contact"
+//                     className="text-gray-400 hover:text-white transition"
+//                   >
+//                     Contact
+//                   </Link>
+//                 </li>
+//               </ul>
+//             </div>
+
+//             <div>
+//               <h3 className="text-lg font-bold mb-4">Contact</h3>
+//               <p className="text-gray-400">
+//                 Email: contact@monapp.com
+//                 <br />
+//                 Tél: +228 XX XX XX XX
+//               </p>
+//             </div>
+//           </div>
+
+//           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+//             <p>&copy; 2025 Mon App. Tous droits réservés.</p>
+//           </div>
+//         </div>
+//       </footer>
+
+//       {/* MODAL DE CONNEXION */}
+//       {isLoginModalOpen && (
+//         <div className="fixed inset-0 z-50 flex items-center justify-center">
+//           {/* Backdrop sombre avec effet blur */}
+//           <div
+//             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+//             onClick={() => setIsLoginModalOpen(false)}
+//           />
+
+//           {/* Modal content */}
+//           <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 animate-in fade-in zoom-in duration-200">
+//             {/* Bouton fermer */}
+//             <button
+//               onClick={() => setIsLoginModalOpen(false)}
+//               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+//             >
+//               <svg
+//                 className="w-6 h-6"
+//                 fill="none"
+//                 stroke="currentColor"
+//                 viewBox="0 0 24 24"
+//               >
+//                 <path
+//                   strokeLinecap="round"
+//                   strokeLinejoin="round"
+//                   strokeWidth={2}
+//                   d="M6 18L18 6M6 6l12 12"
+//                 />
+//               </svg>
+//             </button>
+
+//             {/* Contenu du modal */}
+//             <div className="text-center mb-6">
+//               <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+//                 <svg
+//                   className="w-8 h-8 text-white"
+//                   fill="none"
+//                   stroke="currentColor"
+//                   viewBox="0 0 24 24"
+//                 >
+//                   <path
+//                     strokeLinecap="round"
+//                     strokeLinejoin="round"
+//                     strokeWidth={2}
+//                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+//                   />
+//                 </svg>
+//               </div>
+//               <h2 className="text-2xl font-bold text-gray-900 mb-2">
+//                 Bon retour !
+//               </h2>
+//               <p className="text-gray-600">
+//                 Connectez-vous pour accéder à votre compte
+//               </p>
+//             </div>
+
+//             {/* Formulaire de connexion */}
+//             <LoginForm onSubmit={handleLogin} isLoading={isPending} />
+
+//             {/* Lien vers page login complète (optionnel) */}
+//             {/* <div className="mt-4 text-center">
+//               <p className="text-sm text-gray-600">
+//                 Pas encore de compte ?{" "}
+//                 <Link
+//                   to="/register"
+//                   onClick={() => setIsLoginModalOpen(false)}
+//                   className="text-blue-600 hover:text-blue-700 font-medium"
+//                 >
+//                   S'inscrire
+//                 </Link>
+//               </p>
+//             </div> */}
+//           </div>
+//         </div>
+//       )}
+//     </div>
+//   );
+// }

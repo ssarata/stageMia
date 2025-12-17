@@ -1,0 +1,253 @@
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Controller } from "react-hook-form";
+import type { Control, FieldErrors, UseFormTrigger } from "react-hook-form";
+import { Eye, EyeOff, Check, X } from "lucide-react";
+import { useState } from "react";
+import type { FieldConfig } from "../types/formConfig";
+
+interface FormFieldProps {
+  field: FieldConfig;
+  register: any;
+  control: Control<any>;
+  errors: FieldErrors;
+  watch: any;
+  trigger?: UseFormTrigger<any>;
+}
+
+export const FormField = ({
+  field,
+  register,
+  control,
+  errors,
+  watch,
+  trigger,
+}: FormFieldProps) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [touched, setTouched] = useState(false);
+  const error = errors[field.name];
+  const fieldValue = watch(field.name);
+
+  //
+  const hasValue =
+    fieldValue !== undefined && fieldValue !== "" && fieldValue !== null;
+  const isValid = !error && hasValue && touched;
+  const isInvalid = error && touched;
+
+  const handleBlur = async () => {
+    setTouched(true);
+    if (trigger) {
+      await trigger(field.name);
+    }
+  };
+
+  const renderInput = () => {
+    switch (field.type) {
+      case "select":
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            render={({ field: controllerField }) => (
+              <div className="relative">
+                <Select
+                  onValueChange={(value) => {
+                    const parsedValue = isNaN(Number(value))
+                      ? value
+                      : Number(value);
+                    controllerField.onChange(parsedValue);
+                    setTouched(true);
+                    if (trigger) {
+                      trigger(field.name);
+                    }
+                  }}
+                  // value={
+                  //   controllerField.value !== undefined
+                  //     ? controllerField.value.toString()
+                  //     : ""
+                  // }
+
+                  value={
+                    controllerField.value !== undefined && controllerField.value !== null
+                      ? controllerField.value.toString()
+                      : ""
+                  }
+                  disabled={field.isLoading}
+                >
+                  <SelectTrigger
+                    className={`
+                      ${isValid ? "border-green-500 focus:ring-green-500 pr-10" : ""} 
+                      ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
+                    `}
+                  >
+                    <SelectValue
+                      placeholder={field.placeholder || "Sélectionner"}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options?.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value.toString()}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isValid && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                )}
+                {isInvalid && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                    <X className="h-5 w-5 text-red-500" />
+                  </div>
+                )}
+              </div>
+            )}
+          />
+        );
+
+      case "textarea":
+        return (
+          <div className="relative">
+            <Textarea
+              placeholder={field.placeholder}
+              {...register(field.name)}
+              rows={4}
+              onBlur={handleBlur}
+              className={`
+                ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
+              `}
+            />
+            {isValid && (
+              <div className="absolute right-3 top-3 pointer-events-none">
+                <Check className="h-5 w-5 text-green-500" />
+              </div>
+            )}
+            {isInvalid && (
+              <div className="absolute right-3 top-3 pointer-events-none">
+                <X className="h-5 w-5 text-red-500" />
+              </div>
+            )}
+          </div>
+        );
+
+      case "password":
+        if (field.showPasswordToggle) {
+          return (
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder={field.placeholder}
+                {...register(field.name)}
+                onBlur={handleBlur}
+                className={`
+                  pr-20 
+                  ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                  ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
+                `}
+              />
+              {isValid && (
+                <div className="absolute right-12 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <Check className="h-5 w-5 text-green-500" />
+                </div>
+              )}
+              {isInvalid && (
+                <div className="absolute right-12 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <X className="h-5 w-5 text-red-500" />
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+              </button>
+            </div>
+          );
+        }
+        return (
+          <div className="relative">
+            <Input
+              type="password"
+              placeholder={field.placeholder}
+              {...register(field.name)}
+              onBlur={handleBlur}
+              className={`
+                pr-10 
+                ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
+              `}
+            />
+            {isValid && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Check className="h-5 w-5 text-green-500" />
+              </div>
+            )}
+            {isInvalid && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <X className="h-5 w-5 text-red-500" />
+              </div>
+            )}
+          </div>
+        );
+
+      default:
+        return (
+          <div className="relative">
+            <Input
+              type={field.type}
+              placeholder={field.placeholder}
+              {...register(field.name)}
+              onBlur={handleBlur}
+              className={`
+                pr-10 
+                ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
+              `}
+            />
+            {isValid && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <Check className="h-5 w-5 text-green-500" />
+              </div>
+            )}
+            {isInvalid && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                <X className="h-5 w-5 text-red-500" />
+              </div>
+            )}
+          </div>
+        );
+    }
+  };
+
+  return (
+    <div>
+      <label className="text-sm font-medium mb-2 block">
+        {field.label}
+        {field.required && <span className="text-red-500"> *</span>}
+      </label>
+
+      {renderInput()}
+      {error && (
+        <p className="text-red-500 text-sm mt-1">{error.message as string}</p>
+      )}
+    </div>
+  );
+};

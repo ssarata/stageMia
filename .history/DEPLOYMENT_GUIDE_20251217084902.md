@@ -13,8 +13,7 @@ Ce guide vous accompagne dans le déploiement de l'application MIA sur Railway (
 
 ### Étape 1 : Créer un projet Railway
 
-1. Connectez-vous à [Railway](https://railw
-ay.app)
+1. Connectez-vous à [Railway](https://railway.app)
 2. Cliquez sur **"New Project"**
 3. Sélectionnez **"Deploy from GitHub repo"**
 4. Autorisez Railway à accéder à votre GitHub

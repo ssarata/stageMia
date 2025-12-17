@@ -1,0 +1,190 @@
+====================AJOUTER DES ICONS FONCTIONNALITÉ PERSONNALISÉ==========================
+
+
+
+import { useState, useCallback } from "react";
+import { UserPlus, Eye, Users, School } from "lucide-react";
+import type { ColDef, ValueGetterParams } from "ag-grid-community";
+
+import { useGetNiveaux, useDeleteNiveau } from "@/hooks/private/niveauHook";
+import type { Niveau } from "@/interfaces/interfaceTable";
+import EditNiveau from "./EditNiveau";
+import { createActionCellRenderer } from "@/components/Global/Tables/ActionsCellRender/ActionCellRenderer";
+import { useColumnVisibility } from "@/components/Global/Tables/sharedHook/useColumnVisibility";
+import { ColumnVisibilityMenu } from "@/components/Global/Tables/VisibleColumns/ColumnVisibilityMenu";
+import { DataTable } from "@/components/Global/Tables/CustomDateTable/DataTable";
+import ConfirmModal from "@/components/Global/Modal/ConfirModal";
+      
+const COLUMN_LABELS: Record<string, string> = {
+  nomNiveau: "Nom du Niveau",
+  effectif: "Effectif élèves",
+  nombreClasses: "Nombre de classes",
+  actions: "Actions"
+};
+
+const INITIAL_VISIBLE_COLUMNS = {
+  nomNiveau: true,
+  effectif: true,
+  nombreClasses: true,
+  actions: true
+};
+
+const ListeNiveau = () => {
+  const { data, isLoading, error } = useGetNiveaux();
+  const { mutate: deleteNiveau } = useDeleteNiveau();
+
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedNiveau, setSelectedNiveau] = useState<Niveau | null>(null);
+
+  const openConfirmModal = (id: number) => {
+    setSelectedId(id);
+    setIsModalOpen(true);
+  };
+
+  const closeConfirmModal = () => {
+    setSelectedId(null);
+    setIsModalOpen(false);
+  };
+
+  const confirmDelete = () => {
+    if (!selectedId) return;
+    deleteNiveau(selectedId, { onSuccess: closeConfirmModal });
+  };
+
+  const handleEditNiveau = (niveau: Niveau) => {
+    setSelectedNiveau(niveau);
+    setIsEditModalOpen(true);
+  };
+
+  const handleOpenChange = (isOpen: boolean) => {
+    setIsEditModalOpen(isOpen);
+    if (!isOpen) {
+      setSelectedNiveau(null);
+    }
+  };
+
+  // Nouvelles fonctions pour les actions personnalisées
+  const handleViewDetails = (niveau: Niveau) => {
+    console.log("Voir détails du niveau:", niveau);
+    // Implémentez votre logique ici
+    // Par exemple: router.push(`/niveaux/${niveau.id}`)
+  };
+
+  const handleViewStudents = (niveau: Niveau) => {
+    console.log("Voir les élèves du niveau:", niveau);
+    // Implémentez votre logique ici
+    // Par exemple: router.push(`/niveaux/${niveau.id}/eleves`)
+  };
+
+  const handleViewClasses = (niveau: Niveau) => {
+    console.log("Voir les classes du niveau:", niveau);
+    // Implémentez votre logique ici
+    // Par exemple: router.push(`/niveaux/${niveau.id}/classes`)
+  };
+
+  // Définition des colonnes
+  const getColumnDefinitions = useCallback((visibleColumns: Record<string, boolean>) => {
+    const columns: (ColDef<Niveau> | false)[] = [
+      visibleColumns.nomNiveau && {
+        field: "nomNiveau",
+        headerName: "Nom du Niveau",
+        cellClass: "font-medium"
+      },
+      visibleColumns.effectif && {
+        headerName: "Effectif élèves",
+        valueGetter: (params: ValueGetterParams<Niveau>) => params.data?._count?.eleves ?? 0,
+      },
+      visibleColumns.nombreClasses && {
+        headerName: "Nombre de classes",
+        valueGetter: (params: ValueGetterParams<Niveau>) => params.data?._count?.classes ?? 0, 
+      },
+      visibleColumns.actions && {
+        headerName: "Actions",
+        cellRenderer: createActionCellRenderer<Niveau>({
+          onEdit: (data) => handleEditNiveau(data),
+          onDelete: (data) => openConfirmModal(data.id),
+          // Actions personnalisées pour cette table uniquement
+          customActions: [
+            {
+              label: "Voir détails",
+              icon: <Eye className="mr-2 h-4 w-4" />,
+              onClick: (data) => handleViewDetails(data),
+            },
+            {
+              label: "Voir les élèves",
+              icon: <Users className="mr-2 h-4 w-4" />,
+              onClick: (data) => handleViewStudents(data),
+              className: "text-blue-600 dark:text-blue-400",
+            },
+            {
+              label: "Voir les classes",
+              icon: <School className="mr-2 h-4 w-4" />,
+              onClick: (data) => handleViewClasses(data),
+              className: "text-green-600 dark:text-green-400",
+            },
+          ]
+        }),
+        sortable: false,
+        filter: false,
+        width: 100,
+        pinned: "right"
+      }
+    ];
+
+    return columns.filter(Boolean) as ColDef<Niveau>[];
+  }, []);
+
+  const { visibleColumns, toggleColumnVisibility, colDefs } = useColumnVisibility({
+    initialColumns: INITIAL_VISIBLE_COLUMNS,
+    columnDefinitions: getColumnDefinitions
+  });
+
+  return (
+    <>
+      <div className="space-y-4">
+        {/* Header avec menu colonnes */}
+        <div className="flex items-center justify-end">
+          <ColumnVisibilityMenu
+            visibleColumns={visibleColumns}
+            columnLabels={COLUMN_LABELS}
+            onToggle={toggleColumnVisibility}
+          />
+        </div>
+
+        {/* Table réutilisable */}
+        <DataTable<Niveau>
+          data={data}
+          columnDefs={colDefs}
+          isLoading={isLoading}
+          error={error}
+          emptyStateConfig={{
+            icon: <UserPlus className="h-8 w-8 text-muted-foreground" />,
+            title: "Aucun niveau",
+            description: "Commencez par ajouter votre premier niveau",
+          }}
+          statsLabel="niveau(x)"
+          height={600}
+        />
+      </div>
+
+      <ConfirmModal
+        isOpen={isModalOpen}
+        onConfirm={confirmDelete}
+        onCancel={closeConfirmModal}
+      />
+
+      {selectedNiveau && (
+        <EditNiveau
+          open={isEditModalOpen}
+          onOpenChange={handleOpenChange}
+          niveau={selectedNiveau}
+        />
+      )}
+    </>
+  );
+};
+
+export default ListeNiveau;
