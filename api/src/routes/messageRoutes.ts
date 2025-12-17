@@ -9,7 +9,8 @@ import {
   deleteMessageForMe,
   deleteMessageForEveryone
 } from '../controllers/messageController.js';
-import { authenticate } from '../middlewares/auth.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -42,7 +43,7 @@ const router = Router();
  *       401:
  *         description: Non authentifié
  */
-router.get('/conversations', authenticate, getRecentConversations);
+router.get('/conversations', authenticateToken, ensurePermission('HistoriqueMessage.read'), getRecentConversations);
 
 /**
  * @swagger
@@ -65,7 +66,7 @@ router.get('/conversations', authenticate, getRecentConversations);
  *       401:
  *         description: Non authentifié
  */
-router.get('/', authenticate, getAllMessages);
+router.get('/', authenticateToken, ensurePermission('HistoriqueMessage.read'), getAllMessages);
 
 /**
  * @swagger
@@ -96,7 +97,7 @@ router.get('/', authenticate, getAllMessages);
  *       401:
  *         description: Non authentifié
  */
-router.get('/conversation/:userId', authenticate, getConversation);
+router.get('/conversation/:userId', authenticateToken, ensurePermission('HistoriqueMessage.read'), getConversation);
 
 /**
  * @swagger
@@ -145,7 +146,7 @@ router.get('/conversation/:userId', authenticate, getConversation);
  *       500:
  *         description: Erreur serveur
  */
-router.post('/', authenticate, sendMessage);
+router.post('/', authenticateToken, ensurePermission('HistoriqueMessage.create'), sendMessage);
 
 /**
  * @swagger
@@ -180,7 +181,7 @@ router.post('/', authenticate, sendMessage);
  *       401:
  *         description: Non authentifié
  */
-router.put('/:id/read', authenticate, markAsRead);
+router.put('/:id/read', authenticateToken, ensurePermission('HistoriqueMessage.update'), markAsRead);
 
 /**
  * @swagger
@@ -222,7 +223,7 @@ router.put('/:id/read', authenticate, markAsRead);
  *       401:
  *         description: Non authentifié
  */
-router.put('/:id', authenticate, updateMessage);
+router.put('/:id', authenticateToken, ensurePermission('HistoriqueMessage.update'), updateMessage);
 
 /**
  * @swagger
@@ -249,7 +250,7 @@ router.put('/:id', authenticate, updateMessage);
  *       401:
  *         description: Non authentifié
  */
-router.delete('/:id/delete-for-me', authenticate, deleteMessageForMe);
+router.delete('/:id/delete-for-me', authenticateToken, ensurePermission('HistoriqueMessage.delete'), deleteMessageForMe);
 
 /**
  * @swagger
@@ -276,6 +277,6 @@ router.delete('/:id/delete-for-me', authenticate, deleteMessageForMe);
  *       401:
  *         description: Non authentifié
  */
-router.delete('/:id/delete-for-everyone', authenticate, deleteMessageForEveryone);
+router.delete('/:id/delete-for-everyone', authenticateToken, ensurePermission('HistoriqueMessage.delete'), deleteMessageForEveryone);
 
 export default router;

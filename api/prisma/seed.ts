@@ -4,191 +4,209 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Début du seeding...');
+  console.log('🌱 Démarrage du seed...');
 
-  // Créer les permissions
-  const permissions = [
-    { nomPermission: 'VIEW_USERS', description: 'Voir tous les utilisateurs' },
-    { nomPermission: 'CREATE_USER', description: 'Créer un utilisateur' },
-    { nomPermission: 'UPDATE_USER', description: 'Modifier un utilisateur' },
-    { nomPermission: 'DELETE_USER', description: 'Supprimer un utilisateur' },
-    { nomPermission: 'VIEW_ROLES', description: 'Voir tous les rôles' },
-    { nomPermission: 'CREATE_ROLE', description: 'Créer un rôle' },
-    { nomPermission: 'UPDATE_ROLE', description: 'Modifier un rôle' },
-    { nomPermission: 'DELETE_ROLE', description: 'Supprimer un rôle' },
-    { nomPermission: 'VIEW_PERMISSIONS', description: 'Voir toutes les permissions' },
-    { nomPermission: 'CREATE_PERMISSION', description: 'Créer une permission' },
-    { nomPermission: 'UPDATE_PERMISSION', description: 'Modifier une permission' },
-    { nomPermission: 'DELETE_PERMISSION', description: 'Supprimer une permission' },
+  // ============================================
+  // 1. CRÉATION DES RÔLES
+  // ============================================
+
+  console.log('📝 Création des rôles...');
+
+  const roles = [
+    { nomRole: 'ADMIN', description: 'Administrateur système avec tous les droits' },
+    { nomRole: 'LECTEUR', description: 'le lecteur' },
+    { nomRole: 'MIA', description: 'Le personnel de la MIA' }
   ];
 
-  console.log('📝 Création des permissions...');
-  for (const permission of permissions) {
-    await prisma.permission.upsert({
-      where: { nomPermission: permission.nomPermission },
+  const createdRoles = [];
+  for (const roleData of roles) {
+    const role = await prisma.role.upsert({
+      where: { nomRole: roleData.nomRole },
       update: {},
-      create: permission
+      create: roleData
     });
+    createdRoles.push(role);
+    console.log(`✅ Rôle créé: ${role.nomRole}`);
   }
-  console.log('✅ Permissions créées');
 
-  // Créer les rôles
-  console.log('👥 Création des rôles...');
+  // ============================================
+  // 2. CRÉATION DES PERMISSIONS
+  // ============================================
 
-  const adminRole = await prisma.role.upsert({
-    where: { nomRole: 'Admin' },
-    update: {},
-    create: {
-      nomRole: 'Admin',
-      description: 'Administrateur avec tous les droits',
+  console.log('🔐 Création des permissions...');
+
+  const permissions = [
+    // Permissions Utilisateurs
+    { nomPermission: 'user.read', description: 'Consulter les utilisateurs' },
+    { nomPermission: 'user.create', description: 'Créer des utilisateurs' },
+    { nomPermission: 'user.update', description: 'Modifier les utilisateurs' },
+    { nomPermission: 'user.delete', description: 'Supprimer les utilisateurs' },
+    { nomPermission: 'user.archive', description: 'Archiver les utilisateurs' },
+
+    // Permissions Rôles
+    { nomPermission: 'role.read', description: 'Consulter les rôles' },
+    { nomPermission: 'role.create', description: 'Créer des rôles' },
+    { nomPermission: 'role.update', description: 'Modifier les rôles' },
+    { nomPermission: 'role.delete', description: 'Supprimer les rôles' },
+    { nomPermission: 'role.assign_permissions', description: 'Assigner des permissions aux rôles' },
+
+    // Permissions de base
+    { nomPermission: 'permission.read', description: 'Consulter les permissions' },
+    { nomPermission: 'permission.create', description: 'Créer des permissions' },
+    { nomPermission: 'permission.update', description: 'Modifier les permissions' },
+    { nomPermission: 'permission.delete', description: 'Supprimer les permissions' },
+
+    // Permissions Élèves
+    { nomPermission: 'categorie.read', description: 'Consulter les categories' },
+    { nomPermission: 'categorie.create', description: 'Inscrire des categories' },
+    { nomPermission: 'categorie.update', description: 'Modifier les informations des categories' },
+    { nomPermission: 'categorie.delete', description: 'Supprimer des categories' },
+
+    // Permissions Notes
+    { nomPermission: 'contact.read', description: 'Consulter les contacts' },
+    { nomPermission: 'contact.create', description: 'Saisir des contacts' },
+    { nomPermission: 'contact.update', description: 'Modifier des contacts' },
+    { nomPermission: 'contact.delete', description: 'Supprimer des contacts' },
+    { nomPermission: 'contact.export', description: 'Exporter les relevés de contacts' },
+
+    // Permissions Classes
+    { nomPermission: 'notification.read', description: 'Consulter les notifications' },
+    { nomPermission: 'notification.create', description: 'Créer des notifications' },
+    { nomPermission: 'notification.update', description: 'Modifier les notifications' },
+    { nomPermission: 'notification.delete', description: 'Supprimer des notifications' },
+    { nomPermission: 'notification.manage_eleves', description: 'Gérer les élèves dans les notifications' },
+
+    // Permissions Accueil
+    { nomPermission: 'HistoriqueMessage.read', description: 'Consulter les pages HistoriqueMessage' },
+    { nomPermission: 'HistoriqueMessage.create', description: 'Créer des pages HistoriqueMessage' },
+    { nomPermission: 'HistoriqueMessage.update', description: 'Modifier les pages HistoriqueMessage' },
+    { nomPermission: 'HistoriqueMessage.delete', description: 'Supprimer des pages HistoriqueMessage' },
+
+    { nomPermission: 'SharedContact.read', description: 'Consulter les pages SharedContact' },
+    { nomPermission: 'SharedContact.create', description: 'Créer des pages SharedContact' },
+    { nomPermission: 'SharedContact.update', description: 'Modifier les pages SharedContact' },
+    { nomPermission: 'SharedContact.delete', description: 'Supprimer des pages SharedContact' },
+
+
+
+    // Ajouter d'autres permissions selon les besoins
+
+  ];
+
+  const createdPermissions: any[] = [];
+  for (const permissionData of permissions) {
+    const permission = await prisma.permission.upsert({
+      where: { nomPermission: permissionData.nomPermission },
+      update: {},
+      create: permissionData
+    });
+    createdPermissions.push(permission);
+  }
+  console.log(`✅ ${createdPermissions.length} permissions créées`);
+
+  // ============================================
+  // 3. ATTRIBUTION DES PERMISSIONS AUX RÔLES
+  // ============================================
+
+  console.log('🔗 Attribution des permissions aux rôles...');
+
+  // ADMIN : Toutes les permissions
+  const adminRole = createdRoles.find(r => r.nomRole === 'ADMIN')!;
+  await prisma.role.update({
+    where: { id: adminRole.id },
+    data: {
       permissions: {
-        connect: permissions.map(p => ({ nomPermission: p.nomPermission }))
+        connect: createdPermissions.map(p => ({ id: p.id }))
       }
     }
   });
+  console.log(`✅ ADMIN: ${createdPermissions.length} permissions assignées`);
 
-  const userRole = await prisma.role.upsert({
-    where: { nomRole: 'User' },
-    update: {},
-    create: {
-      nomRole: 'User',
-      description: 'Utilisateur standard'
-    }
-  });
-
-  console.log('✅ Rôles créés');
-
-  // Créer des catégories
-  console.log('📂 Création des catégories...');
-  const categories = [
-    { nomCategorie: 'Travail', description: 'Contacts professionnels' },
-    { nomCategorie: 'Famille', description: 'Membres de la famille' },
-    { nomCategorie: 'Amis', description: 'Amis et connaissances' },
-    { nomCategorie: 'Fournisseurs', description: 'Fournisseurs et partenaires' },
-    { nomCategorie: 'Clients', description: 'Clients et prospects' }
+  // PROVISEUR : Gestion complète de l'établissement
+  const lecteurRole = createdRoles.find(r => r.nomRole === 'LECTEUR')!;
+  const lecteurPermissions = [
+    // Gestion des utilisateurs et rôles
+    'contact.read','categorie.read',
   ];
 
-  for (const categorie of categories) {
-    await prisma.categorie.upsert({
-      where: { nomCategorie: categorie.nomCategorie },
-      update: {},
-      create: categorie
-    });
-  }
-  console.log('✅ Catégories créées');
+  const lecteurPermissionsObjects = lecteurPermissions
+    .map(nomPermission => createdPermissions.find(p => p.nomPermission === nomPermission))
+    .filter(p => p !== undefined);
 
-  // Créer un utilisateur admin
-  console.log('👤 Création de l\'utilisateur admin...');
-  const hashedPassword = await bcrypt.hash('admin123', 10);
-
-  const adminUser = await prisma.user.upsert({
-    where: { email: 'admin@mia.com' },
-    update: {},
-    create: {
-      nom: 'Admin',
-      prenom: 'MIA',
-      email: 'admin@mia.com',
-      adresse: '123 rue de l\'Admin',
-      telephone: '+22890000000',
-      motDePasse: hashedPassword,
-      sexe: 'M',
-      roleId: adminRole.id
+  await prisma.role.update({
+    where: { id: lecteurRole.id },
+    data: {
+      permissions: {
+        connect: lecteurPermissionsObjects.map(p => ({ id: p!.id }))
+      }
     }
   });
-  console.log('✅ Utilisateur admin créé');
+  console.log(`✅ lecteur: ${lecteurPermissionsObjects.length} permissions assignées`);
 
-  // Créer quelques utilisateurs de test
-  console.log('👥 Création des utilisateurs de test...');
-  const testUsers = [
-    {
-      nom: 'Dupont',
-      prenom: 'Jean',
-      email: 'jean.dupont@mia.com',
-      adresse: '10 rue de Paris',
-      telephone: '+22890111111',
-      motDePasse: await bcrypt.hash('password123', 10),
-      sexe: 'M',
-      roleId: userRole.id
-    },
-    {
-      nom: 'Martin',
-      prenom: 'Marie',
-      email: 'marie.martin@mia.com',
-      adresse: '20 avenue des Champs',
-      telephone: '+22890222222',
-      motDePasse: await bcrypt.hash('password123', 10),
-      sexe: 'F',
-      roleId: userRole.id
-    },
-    {
-      nom: 'Bernard',
-      prenom: 'Pierre',
-      email: 'pierre.bernard@mia.com',
-      adresse: '30 boulevard de la République',
-      telephone: '+22890333333',
-      motDePasse: await bcrypt.hash('password123', 10),
-      sexe: 'M',
-      roleId: userRole.id
-    }
+  // PROFESSEUR : Gestion pédagogique
+  const miaRole = createdRoles.find(r => r.nomRole === 'MIA')!;
+  const miaPermissions = [
+  'contact.read', 'contact.create', 'contact.update',
+  'categorie.read', 'categorie.create', 'categorie.update',
+  'user.read', 'user.create', 'user.update',
+  'HistoriqueMessage.read', 'HistoriqueMessage.create', 'HistoriqueMessage.update','HistoriqueMessage.delete',
+  'notification.read', 'notification.create', 'notification.update',
+  'sharedContacts.read', 'sharedContacts.create', 'sharedContacts.update',
+
+
   ];
 
-  for (const user of testUsers) {
-    await prisma.user.upsert({
-      where: { email: user.email },
-      update: {},
-      create: user
-    });
-  }
-  console.log('✅ Utilisateurs de test créés');
+  const miaPermissionsObjects = miaPermissions
+    .map(nomPermission => createdPermissions.find(p => p.nomPermission === nomPermission))
+    .filter(p => p !== undefined);
 
-  // Créer quelques contacts pour l'admin
-  console.log('📇 Création de contacts de test...');
-  const travailCategorie = await prisma.categorie.findUnique({
-    where: { nomCategorie: 'Travail' }
+  await prisma.role.update({
+    where: { id: miaRole.id },
+    data: {
+      permissions: {
+        connect: miaPermissionsObjects.map(p => ({ id: p!.id }))
+      }
+    }
+  });
+  console.log(`✅ mia: ${miaPermissionsObjects.length} permissions assignées`);
+
+  console.log('👤 Création de l\'utilisateur admin par défaut...');
+
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: 'admin@mia.com' }
   });
 
-  const contacts = [
-    {
-      nom: 'Kouassi',
-      prenom: 'Kofi',
-      telephone: '+22890444444',
-      email: 'kofi.kouassi@entreprise.com',
-      adresse: '15 rue du Commerce',
-      fonction: 'Directeur',
-      organisation: 'Entreprise ABC',
-      notes: 'Contact important',
-      userId: adminUser.id,
-      categorieId: travailCategorie?.id
-    },
-    {
-      nom: 'Adjovi',
-      prenom: 'Sena',
-      telephone: '+22890555555',
-      email: 'sena.adjovi@societe.com',
-      adresse: '25 avenue de la Liberté',
-      fonction: 'Manager',
-      organisation: 'Société XYZ',
-      notes: 'Rencontre programmée',
-      userId: adminUser.id,
-      categorieId: travailCategorie?.id
-    }
-  ];
+  if (existingAdmin) {
+    console.log('✅ Utilisateur admin existe déjà:', existingAdmin.email);
+  } else {
+    const hashedPassword = await bcrypt.hash('admin123', 12);
 
-  for (const contact of contacts) {
-    await prisma.contact.create({
-      data: contact
+    const adminUser = await prisma.user.create({
+      data: {
+        email: 'admin@mia.com',
+        motDePasse: hashedPassword,
+        nom: 'Admin',
+        prenom: 'System',
+        telephone: '+226 00 00 00 00',
+        adresse: 'Ouagadougou, Burkina Faso',
+        role: {
+          connect: { id: adminRole.id }
+        }
+      }
     });
-  }
-  console.log('✅ Contacts de test créés');
 
-  console.log('🎉 Seeding terminé avec succès!');
+    console.log(`✅ Utilisateur admin créé: ${adminUser.email}`);
+  }
+
+  console.log('✅ Seed terminé avec succès!');
 }
 
 main()
-  .catch((e) => {
-    console.error('❌ Erreur lors du seeding:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
+  .then(async () => {
     await prisma.$disconnect();
+  })
+  .catch(async (e) => {
+    console.error('❌ Erreur lors du seed:', e);
+    await prisma.$disconnect();
+    process.exit(1);
   });

@@ -6,7 +6,8 @@ import {
   updateCategorie,
   deleteCategorie
 } from '../controllers/categorieController.js';
-import { authenticate } from '../middlewares/auth.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission, ensureAdminOrMIA } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -31,7 +32,7 @@ const router = Router();
  *       401:
  *         description: Non authentifié
  */
-router.get('/', authenticate, getAllCategories);
+router.get('/', authenticateToken, ensurePermission('categorie.read'), getAllCategories);
 
 /**
  * @swagger
@@ -62,7 +63,7 @@ router.get('/', authenticate, getAllCategories);
  *       401:
  *         description: Non authentifié
  */
-router.get('/:id', authenticate, getCategorieById);
+router.get('/:id', authenticateToken, ensurePermission('categorie.read'), getCategorieById);
 
 /**
  * @swagger
@@ -102,7 +103,7 @@ router.get('/:id', authenticate, getCategorieById);
  *       401:
  *         description: Non authentifié
  */
-router.post('/', authenticate, createCategorie);
+router.post('/', authenticateToken, ensureAdminOrMIA, ensurePermission('categorie.create'), createCategorie);
 
 /**
  * @swagger
@@ -150,7 +151,7 @@ router.post('/', authenticate, createCategorie);
  *       401:
  *         description: Non authentifié
  */
-router.put('/:id', authenticate, updateCategorie);
+router.put('/:id', authenticateToken, ensureAdminOrMIA, ensurePermission('categorie.update'), updateCategorie);
 
 /**
  * @swagger
@@ -185,6 +186,6 @@ router.put('/:id', authenticate, updateCategorie);
  *       401:
  *         description: Non authentifié
  */
-router.delete('/:id', authenticate, deleteCategorie);
+router.delete('/:id', authenticateToken, ensureAdminOrMIA, ensurePermission('categorie.delete'), deleteCategorie);
 
 export default router;

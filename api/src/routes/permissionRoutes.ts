@@ -6,8 +6,8 @@ import {
   updatePermission,
   deletePermission
 } from '../controllers/permissionController.js';
-import { authenticate } from '../middlewares/auth.js';
-import { checkPermission } from '../middlewares/permissions.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -34,7 +34,7 @@ const router = Router();
  *       403:
  *         description: Permission refusée
  */
-router.get('/', authenticate, checkPermission('VIEW_PERMISSIONS'), getAllPermissions);
+router.get('/', authenticateToken, ensurePermission('permission.read'), getAllPermissions);
 
 /**
  * @swagger
@@ -67,7 +67,7 @@ router.get('/', authenticate, checkPermission('VIEW_PERMISSIONS'), getAllPermiss
  *       403:
  *         description: Permission refusée
  */
-router.get('/:id', authenticate, checkPermission('VIEW_PERMISSIONS'), getPermissionById);
+router.get('/:id', authenticateToken, ensurePermission('permission.read'), getPermissionById);
 
 /**
  * @swagger
@@ -109,7 +109,7 @@ router.get('/:id', authenticate, checkPermission('VIEW_PERMISSIONS'), getPermiss
  *       403:
  *         description: Permission refusée
  */
-router.post('/', authenticate, checkPermission('CREATE_PERMISSION'), createPermission);
+router.post('/', authenticateToken, ensurePermission('permission.create'), createPermission);
 
 /**
  * @swagger
@@ -159,7 +159,7 @@ router.post('/', authenticate, checkPermission('CREATE_PERMISSION'), createPermi
  *       403:
  *         description: Permission refusée
  */
-router.put('/:id', authenticate, checkPermission('UPDATE_PERMISSION'), updatePermission);
+router.put('/:id', authenticateToken, ensurePermission('permission.update'), updatePermission);
 
 /**
  * @swagger
@@ -196,6 +196,6 @@ router.put('/:id', authenticate, checkPermission('UPDATE_PERMISSION'), updatePer
  *       403:
  *         description: Permission refusée
  */
-router.delete('/:id', authenticate, checkPermission('DELETE_PERMISSION'), deletePermission);
+router.delete('/:id', authenticateToken, ensurePermission('permission.delete'), deletePermission);
 
 export default router;

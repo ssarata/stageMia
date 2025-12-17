@@ -7,7 +7,8 @@ import {
   deleteNotification,
   getUnreadCount
 } from '../controllers/notificationController.js';
-import { authenticate } from '../middlewares/auth.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -33,8 +34,10 @@ const router = Router();
  *                   example: 5
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.get('/unread-count', authenticate, getUnreadCount);
+router.get('/unread-count', authenticateToken, ensurePermission('notification.read'), getUnreadCount);
 
 /**
  * @swagger
@@ -56,8 +59,10 @@ router.get('/unread-count', authenticate, getUnreadCount);
  *                 $ref: '#/components/schemas/Notification'
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.get('/', authenticate, getAllNotifications);
+router.get('/', authenticateToken, ensurePermission('notification.read'), getAllNotifications);
 
 // /**
 //  * @swagger
@@ -99,7 +104,7 @@ router.get('/', authenticate, getAllNotifications);
 //  *       401:
 //  *         description: Non authentifié
 //  */
-// router.post('/', authenticate, createNotification);
+// router.post('/', authenticateToken, createNotification);
 
 /**
  * @swagger
@@ -133,8 +138,10 @@ router.get('/', authenticate, getAllNotifications);
  *         description: Notification introuvable
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.put('/:id/read', authenticate, markNotificationAsRead);
+router.put('/:id/read', authenticateToken, ensurePermission('notification.update'), markNotificationAsRead);
 
 /**
  * @swagger
@@ -162,8 +169,10 @@ router.put('/:id/read', authenticate, markNotificationAsRead);
  *                   example: 5
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.put('/mark-all-read', authenticate, markAllAsRead);
+router.put('/mark-all-read', authenticateToken, ensurePermission('notification.update'), markAllAsRead);
 
 /**
  * @swagger
@@ -197,7 +206,9 @@ router.put('/mark-all-read', authenticate, markAllAsRead);
  *         description: Notification introuvable
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.delete('/:id', authenticate, deleteNotification);
+router.delete('/:id', authenticateToken, ensurePermission('notification.delete'), deleteNotification);
 
 export default router;

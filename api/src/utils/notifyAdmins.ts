@@ -12,7 +12,7 @@ export const notifyAdmins = async (
   try {
     // Trouver tous les utilisateurs avec le rôle Admin
     const adminRole = await prisma.role.findFirst({
-      where: { nomRole: 'Admin' }
+      where: { nomRole: 'ADMIN' }
     });
 
     if (!adminRole) {

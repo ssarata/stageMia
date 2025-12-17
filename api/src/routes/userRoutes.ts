@@ -5,10 +5,11 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  getProfile
+  getProfile,
+  assignRoleToUser
 } from '../controllers/userController.js';
-import { authenticate } from '../middlewares/auth.js';
-import { checkPermission } from '../middlewares/permissions.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission, ensureAdmin } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -31,7 +32,7 @@ const router = Router();
  *       401:
  *         description: Non authentifié
  */
-router.get('/profile', authenticate, getProfile);
+router.get('/profile', authenticateToken, getProfile);
 
 /**
  * @swagger
@@ -56,7 +57,7 @@ router.get('/profile', authenticate, getProfile);
  *       403:
  *         description: Permission refusée
  */
-router.get('/', authenticate, checkPermission('VIEW_USERS'), getAllUsers);
+router.get('/', authenticateToken, ensurePermission('user.read'), getAllUsers);
 
 /**
  * @swagger
@@ -87,7 +88,7 @@ router.get('/', authenticate, checkPermission('VIEW_USERS'), getAllUsers);
  *       401:
  *         description: Non authentifié
  */
-router.get('/:id', authenticate, getUserById);
+router.get('/:id', authenticateToken, getUserById);
 
 /**
  * @swagger
@@ -154,7 +155,7 @@ router.get('/:id', authenticate, getUserById);
  *       403:
  *         description: Permission refusée
  */
-router.post('/', authenticate, checkPermission('CREATE_USER'), createUser);
+router.post('/', authenticateToken, ensurePermission('user.create'), createUser);
 
 /**
  * @swagger
@@ -212,7 +213,7 @@ router.post('/', authenticate, checkPermission('CREATE_USER'), createUser);
  *       403:
  *         description: Permission refusée
  */
-router.put('/:id', authenticate, checkPermission('UPDATE_USER'), updateUser);
+router.put('/:id', authenticateToken, ensurePermission('user.update'), updateUser);
 
 /**
  * @swagger
@@ -249,6 +250,59 @@ router.put('/:id', authenticate, checkPermission('UPDATE_USER'), updateUser);
  *       403:
  *         description: Permission refusée
  */
-router.delete('/:id', authenticate, checkPermission('DELETE_USER'), deleteUser);
+router.delete('/:id', authenticateToken, ensurePermission('user.delete'), deleteUser);
+
+/**
+ * @swagger
+ * /api/users/assign-role:
+ *   post:
+ *     summary: Attribuer un rôle à un utilisateur
+ *     description: Permet à un administrateur d'attribuer ou modifier le rôle d'un utilisateur
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - roleId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: ID de l'utilisateur
+ *                 example: 5
+ *               roleId:
+ *                 type: integer
+ *                 description: ID du rôle à attribuer
+ *                 example: 2
+ *     responses:
+ *       200:
+ *         description: Rôle attribué avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Rôle "MIA" attribué avec succès à Jean Dupont
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Données invalides
+ *       401:
+ *         description: Non authentifié
+ *       403:
+ *         description: Permission refusée (admin requis)
+ *       404:
+ *         description: Utilisateur ou rôle introuvable
+ *       500:
+ *         description: Erreur serveur
+ */
+router.post('/assign-role', authenticateToken, ensureAdmin, assignRoleToUser);
 
 export default router;

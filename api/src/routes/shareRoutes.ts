@@ -5,7 +5,8 @@ import {
   generateShareLink,
   importSharedContact
 } from '../controllers/shareController.js';
-import { authenticate } from '../middlewares/auth.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -62,10 +63,12 @@ const router = Router();
  *         description: Contact ou utilisateur introuvable
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  *       500:
  *         description: Service email non configuré
  */
-router.post('/contact', authenticate, shareContact);
+router.post('/contact', authenticateToken, ensurePermission('SharedContact.create'), shareContact);
 
 /**
  * @swagger
@@ -97,8 +100,10 @@ router.post('/contact', authenticate, shareContact);
  *                     format: date-time
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.get('/received', authenticate, getSharedContacts);
+router.get('/received', authenticateToken, ensurePermission('SharedContact.read'), getSharedContacts);
 
 /**
  * @swagger
@@ -148,8 +153,10 @@ router.get('/received', authenticate, getSharedContacts);
  *         description: Contact introuvable
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.post('/generate-link', authenticate, generateShareLink);
+router.post('/generate-link', authenticateToken, ensurePermission('SharedContact.create'), generateShareLink);
 
 /**
  * @swagger
@@ -190,7 +197,9 @@ router.post('/generate-link', authenticate, generateShareLink);
  *         description: Données invalides
  *       401:
  *         description: Non authentifié
+ *       403:
+ *         description: Permission insuffisante
  */
-router.post('/import', authenticate, importSharedContact);
+router.post('/import', authenticateToken, ensurePermission('SharedContact.create'), importSharedContact);
 
 export default router;

@@ -6,8 +6,8 @@ import {
   updateRole,
   deleteRole
 } from '../controllers/roleController.js';
-import { authenticate } from '../middlewares/auth.js';
-import { checkPermission } from '../middlewares/permissions.js';
+import authenticateToken from '../middlewares/auth.js';
+import { ensurePermission } from '../middlewares/ensurePermission.js';
 
 const router = Router();
 
@@ -34,7 +34,7 @@ const router = Router();
  *       403:
  *         description: Permission refusée
  */
-router.get('/', authenticate, checkPermission('VIEW_ROLES'), getAllRoles);
+router.get('/', authenticateToken, ensurePermission('role.read'), getAllRoles);
 
 /**
  * @swagger
@@ -67,7 +67,7 @@ router.get('/', authenticate, checkPermission('VIEW_ROLES'), getAllRoles);
  *       403:
  *         description: Permission refusée
  */
-router.get('/:id', authenticate, checkPermission('VIEW_ROLES'), getRoleById);
+router.get('/:id', authenticateToken, ensurePermission('role.read'), getRoleById);
 
 /**
  * @swagger
@@ -109,7 +109,7 @@ router.get('/:id', authenticate, checkPermission('VIEW_ROLES'), getRoleById);
  *       403:
  *         description: Permission refusée
  */
-router.post('/', authenticate, checkPermission('CREATE_ROLE'), createRole);
+router.post('/', authenticateToken, ensurePermission('role.create'), createRole);
 
 /**
  * @swagger
@@ -159,7 +159,7 @@ router.post('/', authenticate, checkPermission('CREATE_ROLE'), createRole);
  *       403:
  *         description: Permission refusée
  */
-router.put('/:id', authenticate, checkPermission('UPDATE_ROLE'), updateRole);
+router.put('/:id', authenticateToken, ensurePermission('role.update'), updateRole);
 
 /**
  * @swagger
@@ -196,6 +196,6 @@ router.put('/:id', authenticate, checkPermission('UPDATE_ROLE'), updateRole);
  *       403:
  *         description: Permission refusée
  */
-router.delete('/:id', authenticate, checkPermission('DELETE_ROLE'), deleteRole);
+router.delete('/:id', authenticateToken, ensurePermission('role.delete'), deleteRole);
 
 export default router;

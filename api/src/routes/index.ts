@@ -8,6 +8,7 @@ import categorieRoutes from './categorieRoutes.js';
 import messageRoutes from './messageRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import shareRoutes from './shareRoutes.js';
+import dashboardRoutes from './dashboardRoutes.js';
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router.use('/categories', categorieRoutes);
 router.use('/messages', messageRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/share', shareRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 // Route de santé
 router.get('/health', (req, res) => {
