@@ -12,15 +12,31 @@ const app: Application = express();
 const httpServer = createServer(app);
 
 // Configuration CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:4000',
+  'https://stage-mia-gnru.vercel.app',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'http://localhost:4000',
-    process.env.FRONTEND_URL || '' // URL de votre frontend Vercel
-  ].filter(Boolean),
-  credentials: true
+  origin: function (origin, callback) {
+    // Permettre les requêtes sans origin (comme Postman, curl)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(allowed => origin.includes('vercel.app'))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-JSON'],
+  maxAge: 86400 // 24 heures
 }));
 
 // Middleware pour parser le JSON
