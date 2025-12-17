@@ -4,10 +4,14 @@ node_modules
 *.log
 .DS_Store
 prisma/migrations
-src
-*.ts
-tsconfig.json
-README.md
+uploads
 .git
 .gitignore
-uploads
+README.md
+
+# Ignore tout sauf le dossier api et les fichiers nécessaires
+src
+dist
+index.ts
+vercel-server.ts
+tsconfig.json

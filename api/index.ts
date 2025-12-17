@@ -13,7 +13,13 @@ const httpServer = createServer(app);
 
 // Configuration CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:4000'],
+  origin: [
+    'http://localhost:5173',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:4000',
+    process.env.FRONTEND_URL || '' // URL de votre frontend Vercel
+  ].filter(Boolean),
   credentials: true
 }));
 
