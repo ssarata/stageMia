@@ -10,33 +10,30 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
     const userId = req.user?.id;
     const isAdmin = req.user?.roleName === 'ADMIN';
     const isMIA = req.user?.roleName === 'MIA';
+    const isLecteur = req.user?.roleName === 'LECTEUR';
+    const canSeeAllContacts = isAdmin || isMIA || isLecteur;
 
-    // Statistiques des utilisateurs (Admin et MIA seulement)
-    const totalUsers = (isAdmin || isMIA)
-      ? await prisma.user.count()
-      : null;
+    // Statistiques des utilisateurs (tous les rôles peuvent voir)
+    const totalUsers = await prisma.user.count();
 
-    const newUsersThisMonth = (isAdmin || isMIA)
-      ? await prisma.user.count({
-          where: {
-            createdAt: {
-              gte: new Date(new Date().setDate(1)) // Premier jour du mois
-            }
-          }
-        })
-      : null;
+    const newUsersThisMonth = await prisma.user.count({
+      where: {
+        createdAt: {
+          gte: new Date(new Date().setDate(1)) // Premier jour du mois
+        }
+      }
+    });
 
-    // Statistiques des contacts
-    const totalContacts = userId
-      ? await prisma.contact.count({
+    // Statistiques des contacts - LECTEUR et MIA voient tous les contacts
+    const totalContacts = canSeeAllContacts
+      ? await prisma.contact.count()
+      : await prisma.contact.count({
           where: { userId }
-        })
-      : await prisma.contact.count();
+        });
 
-    const newContactsThisMonth = userId
+    const newContactsThisMonth = canSeeAllContacts
       ? await prisma.contact.count({
           where: {
-            userId,
             createdAt: {
               gte: new Date(new Date().setDate(1))
             }
@@ -44,6 +41,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
         })
       : await prisma.contact.count({
           where: {
+            userId,
             createdAt: {
               gte: new Date(new Date().setDate(1))
             }
@@ -114,9 +112,19 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
           }
         });
 
-    // Statistiques par catégorie de contacts
-    const contactsByCategory = userId
+    // Statistiques par catégorie de contacts - LECTEUR et MIA voient toutes les catégories
+    const contactsByCategory = canSeeAllContacts
       ? await prisma.categorie.findMany({
+          select: {
+            nomCategorie: true,
+            _count: {
+              select: {
+                contacts: true
+              }
+            }
+          }
+        })
+      : await prisma.categorie.findMany({
           where: {
             contacts: {
               some: {
@@ -133,16 +141,6 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
                     userId
                   }
                 }
-              }
-            }
-          }
-        })
-      : await prisma.categorie.findMany({
-          select: {
-            nomCategorie: true,
-            _count: {
-              select: {
-                contacts: true
               }
             }
           }
