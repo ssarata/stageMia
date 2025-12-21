@@ -1,10 +1,11 @@
 //---------------------all---------------
-export type FieldType = 
+export type FieldType =
   // Textes
-  | "text" 
-  | "email" 
-  | "password" 
-  | "tel" 
+  | "text"
+  | "email"
+  | "password"
+  | "tel"
+  | "phone"
   | "url"
   | "search"
   | "textarea" 

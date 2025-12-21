@@ -12,6 +12,8 @@ import EditContact from "./EditContact";
 import { ShareContactDialog } from "../share/ShareContactDialog";
 import { Plus, Users } from "lucide-react";
 import type { ColDef } from "ag-grid-community";
+import { ProtectedAction } from "@/components/Global/ProtectedAction";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface ContactAffiche {
   id: number;
@@ -36,6 +38,7 @@ const ListeContact = () => {
 
   const { data: contacts, isLoading, error } = useGetContacts();
   const { mutate: deleteContact } = useDeleteContact();
+  const { hasPermission } = usePermissions();
 
   const openConfirmModal = (id: number) => {
     setSelectedId(id);
@@ -107,9 +110,9 @@ const ListeContact = () => {
         visibleColumns.actions && {
           headerName: "Actions",
           cellRenderer: createActionCellRenderer<ContactAffiche>({
-            onEdit: (data) => handleEdit(data),
-            onDelete: (data) => openConfirmModal(data.id),
-            onShare: (data) => handleShare(data),
+            onEdit: hasPermission('contact.update') ? (data) => handleEdit(data) : undefined,
+            onDelete: hasPermission('contact.delete') ? (data) => openConfirmModal(data.id) : undefined,
+            onShare: hasPermission('SharedContact.create') ? (data) => handleShare(data) : undefined,
           }),
           sortable: false,
           filter: false,
@@ -147,10 +150,12 @@ const ListeContact = () => {
               onToggle={toggleColumnVisibility}
             />
 
-            <Button onClick={() => setIsOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau contact
-            </Button>
+            <ProtectedAction permission="contact.create" hideIfNoAccess>
+              <Button onClick={() => setIsOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nouveau contact
+              </Button>
+            </ProtectedAction>
           </div>
         </div>
 
@@ -164,10 +169,12 @@ const ListeContact = () => {
             title: "Aucun contact",
             description: "Commencez par ajouter votre premier contact",
             action: (
-              <Button onClick={() => setIsOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter un contact
-              </Button>
+              <ProtectedAction permission="contact.create" hideIfNoAccess>
+                <Button onClick={() => setIsOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Ajouter un contact
+                </Button>
+              </ProtectedAction>
             ),
           }}
           statsLabel="contact(s)"

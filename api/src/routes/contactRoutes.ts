@@ -180,8 +180,7 @@ router.get('/:id', authenticateToken, ensurePermission('contact.read'), getConta
  *       500:
  *         description: Erreur serveur
  */
-router.post('/', authenticateToken, ensurePermission('contact.create'),  createContact);
-// router.post('/', authenticateToken, ensurePermission('contact.create'), validatePhone({ field: 'telephone', required: true }), createContact);
+router.post('/', authenticateToken, ensurePermission('contact.create'), validatePhone({ field: 'telephone', required: true }), createContact);
 
 /**
  * @swagger
@@ -242,8 +241,7 @@ router.post('/', authenticateToken, ensurePermission('contact.create'),  createC
  *       403:
  *         description: Permission insuffisante
  */
-//router.put('/:id', authenticateToken, ensurePermission('contact.update'), validatePhone({ field: 'telephone', required: false }), updateContact);
-router.put('/:id', authenticateToken, ensurePermission('contact.update'), updateContact);
+router.put('/:id', authenticateToken, ensurePermission('contact.update'), validatePhone({ field: 'telephone', required: false }), updateContact);
 
 /**
  * @swagger

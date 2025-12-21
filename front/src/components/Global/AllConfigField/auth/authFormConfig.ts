@@ -52,8 +52,8 @@ export const getRegisterFormConfig = (): FormConfig => ({
     {
       name: "telephone",
       label: "Téléphone",
-      type: "tel",
-      placeholder: "+221 77 123 45 67",
+      type: "phone",
+      placeholder: "Entrez votre numéro",
       required: true,
       gridCols: 1,
     },

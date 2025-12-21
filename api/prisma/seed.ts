@@ -122,16 +122,29 @@ async function main() {
   });
   console.log(`✅ ADMIN: ${createdPermissions.length} permissions assignées`);
 
-  // PROVISEUR : Gestion complète de l'établissement
+  // LECTEUR : Lecture seule des contacts et catégories
   const lecteurRole = createdRoles.find(r => r.nomRole === 'LECTEUR')!;
   const lecteurPermissions = [
-    // Gestion des utilisateurs et rôles
-    'contact.read','categorie.read',
+    // Lecture des contacts et catégories
+    'contact.read',
+    'categorie.read',
+    'notification.read',
+    'HistoriqueMessage.read',
   ];
 
   const lecteurPermissionsObjects = lecteurPermissions
     .map(nomPermission => createdPermissions.find(p => p.nomPermission === nomPermission))
     .filter(p => p !== undefined);
+
+  // Déconnecter toutes les permissions existantes puis reconnecter les nouvelles
+  await prisma.role.update({
+    where: { id: lecteurRole.id },
+    data: {
+      permissions: {
+        set: [], // Vider d'abord
+      }
+    }
+  });
 
   await prisma.role.update({
     where: { id: lecteurRole.id },
@@ -143,22 +156,29 @@ async function main() {
   });
   console.log(`✅ lecteur: ${lecteurPermissionsObjects.length} permissions assignées`);
 
-  // PROFESSEUR : Gestion pédagogique
+  // MIA : Personnel MIA avec gestion des contacts et messages
   const miaRole = createdRoles.find(r => r.nomRole === 'MIA')!;
   const miaPermissions = [
   'contact.read', 'contact.create', 'contact.update',
   'categorie.read', 'categorie.create', 'categorie.update',
-  'user.read', 'user.create', 'user.update',
-  'HistoriqueMessage.read', 'HistoriqueMessage.create', 'HistoriqueMessage.update','HistoriqueMessage.delete',
-  'notification.read', 'notification.create', 'notification.update',
-  'sharedContacts.read', 'sharedContacts.create', 'sharedContacts.update',
-
-
+  'user.read',
+  'HistoriqueMessage.read', 'HistoriqueMessage.create', 'HistoriqueMessage.update', 'HistoriqueMessage.delete',
+  'SharedContact.read', 'SharedContact.create', 'SharedContact.update',
   ];
 
   const miaPermissionsObjects = miaPermissions
     .map(nomPermission => createdPermissions.find(p => p.nomPermission === nomPermission))
     .filter(p => p !== undefined);
+
+  // Déconnecter toutes les permissions existantes puis reconnecter les nouvelles
+  await prisma.role.update({
+    where: { id: miaRole.id },
+    data: {
+      permissions: {
+        set: [], // Vider d'abord
+      }
+    }
+  });
 
   await prisma.role.update({
     where: { id: miaRole.id },

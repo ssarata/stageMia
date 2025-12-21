@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { PhoneInputComponent } from "@/components/ui/phone-input";
 import { Controller } from "react-hook-form";
 import type { Control, FieldErrors, UseFormTrigger } from "react-hook-form";
 import { Eye, EyeOff, Check, X } from "lucide-react";
@@ -50,6 +51,31 @@ export const FormField = ({
 
   const renderInput = () => {
     switch (field.type) {
+      case "phone":
+        return (
+          <Controller
+            name={field.name}
+            control={control}
+            render={({ field: controllerField }) => (
+              <PhoneInputComponent
+                value={controllerField.value}
+                onChange={(phone) => {
+                  controllerField.onChange(phone);
+                  setTouched(true);
+                  if (trigger) {
+                    trigger(field.name);
+                  }
+                }}
+                label=""
+                placeholder={field.placeholder}
+                required={field.required}
+                error={error ? (error.message as string) : ""}
+                disabled={field.disabled}
+              />
+            )}
+          />
+        );
+
       case "select":
         return (
           <Controller

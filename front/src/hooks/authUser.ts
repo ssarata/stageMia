@@ -49,7 +49,7 @@ export const useRegister = () => {
       toast.success("Inscription réussie ! Vous pouvez maintenant vous connecter.");
     },
     onError: (error: any) => {
-      const errorMessage = error?.response?.data?.message || "Erreur lors de l'inscription";
+      const errorMessage = error?.response?.data?.error || error?.response?.data?.message || "Erreur lors de l'inscription";
       toast.error(errorMessage);
     },
   });

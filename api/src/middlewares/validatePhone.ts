@@ -28,7 +28,7 @@ export const validatePhone = (options: ValidatePhoneOptions = {}) => {
     if (!phoneNumber) {
       if (required) {
         res.status(400).json({
-          error: `Le champ ${field} est requis`,
+          error: `Le numéro de téléphone est obligatoire.`,
           field
         });
         return;
@@ -43,11 +43,12 @@ export const validatePhone = (options: ValidatePhoneOptions = {}) => {
 
     if (!validation.isValid) {
       res.status(400).json({
-        error: validation.error || 'Numéro de téléphone invalide',
+        error: `Le numéro de téléphone "${phoneNumber}" n'est pas valide. Veuillez saisir un numéro au format international (ex: +226 70 12 34 56).`,
         field,
         details: {
           provided: phoneNumber,
-          country: defaultCountry
+          country: defaultCountry,
+          message: validation.error
         }
       });
       return;
@@ -79,7 +80,7 @@ export const validateWestAfricanPhone = (field: string = 'telephone') => {
 
     if (!phoneNumber) {
       res.status(400).json({
-        error: `Le champ ${field} est requis`,
+        error: `Le numéro de téléphone est obligatoire.`,
         field
       });
       return;
@@ -103,12 +104,18 @@ export const validateWestAfricanPhone = (field: string = 'telephone') => {
 
     if (!isValid) {
       res.status(400).json({
-        error: 'Numéro de téléphone invalide pour les pays d\'Afrique de l\'Ouest',
+        error: `Le numéro "${phoneNumber}" n'est pas valide pour l'Afrique de l'Ouest. Veuillez vérifier votre numéro.`,
         field,
         acceptedCountries: acceptedCountries.map(c => ({
           code: c,
           name: getCountryName(c)
-        }))
+        })),
+        examples: {
+          BF: '+226 70 12 34 56',
+          TG: '+228 90 12 34 56',
+          CI: '+225 07 12 34 56 78',
+          SN: '+221 77 123 45 67'
+        }
       });
       return;
     }

@@ -11,6 +11,8 @@ import AddCategorie from "./AddCategorie";
 import EditCategorie from "./EditCategorie";
 import { Plus, FolderOpen } from "lucide-react";
 import type { ColDef } from "ag-grid-community";
+import { ProtectedAction } from "@/components/Global/ProtectedAction";
+import { usePermissions } from "@/hooks/usePermissions";
 
 interface CategorieAffiche {
   id: number;
@@ -30,6 +32,7 @@ const ListeCategories = () => {
 
   const { data: categories, isLoading, error } = useGetCategories();
   const { mutate: deleteCategorie } = useDeleteCategorie();
+  const { hasPermission } = usePermissions();
 
   const openConfirmModal = (id: number) => {
     setSelectedId(id);
@@ -82,8 +85,8 @@ const ListeCategories = () => {
         visibleColumns.actions && {
           headerName: "Actions",
           cellRenderer: createActionCellRenderer<CategorieAffiche>({
-            onEdit: (data) => handleEdit(data),
-            onDelete: (data) => openConfirmModal(data.id),
+            onEdit: hasPermission('categorie.update') ? (data) => handleEdit(data) : undefined,
+            onDelete: hasPermission('categorie.delete') ? (data) => openConfirmModal(data.id) : undefined,
           }),
           sortable: false,
           filter: false,
@@ -121,10 +124,12 @@ const ListeCategories = () => {
               onToggle={toggleColumnVisibility}
             />
 
-            <Button onClick={() => setIsOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle catégorie
-            </Button>
+            <ProtectedAction permission="categorie.create" hideIfNoAccess>
+              <Button onClick={() => setIsOpen(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle catégorie
+              </Button>
+            </ProtectedAction>
           </div>
         </div>
 
@@ -138,10 +143,12 @@ const ListeCategories = () => {
             title: "Aucune catégorie",
             description: "Commencez par créer votre première catégorie",
             action: (
-              <Button onClick={() => setIsOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Créer une catégorie
-              </Button>
+              <ProtectedAction permission="categorie.create" hideIfNoAccess>
+                <Button onClick={() => setIsOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Créer une catégorie
+                </Button>
+              </ProtectedAction>
             ),
           }}
           statsLabel="catégorie(s)"

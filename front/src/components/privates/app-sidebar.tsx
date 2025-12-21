@@ -28,25 +28,18 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import {
-  Book,
   ChevronDown,
   ChevronUp,
-  FolderLock,
   GraduationCap,
-  Home,
-  Images,
-  ShieldCheck,
   User2,
-  UserLock,
-  // Users2,
-  Video,
   MessageCircle,
   Bell,
-  Share2,
   Folder,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useState, useEffect } from "react";
+import { ProtectedAction } from "@/components/Global/ProtectedAction";
+import { usePermissions } from "@/hooks/usePermissions";
 
 const SidebarLink = ({
   to,
@@ -128,6 +121,7 @@ const AnimatedCollapsible = ({
 export const AppSidebar = () => {
   const navigate = useNavigate();
   const { logout, user } = useAuthStore();
+  const { hasAnyPermission } = usePermissions();
 
   const handleLogout = () => {
     logout();
@@ -148,51 +142,66 @@ export const AppSidebar = () => {
       </SidebarHeader>
       <SidebarSeparator />
 
-     
-      <AnimatedCollapsible title="Administration">
-   
-        
-       
-       
-        <SidebarMenuItem>
-          <SidebarLink
-            to="/dashboard/users"
-            icon={GraduationCap}
-            label="Users"
-          />
-        </SidebarMenuItem>
-      </AnimatedCollapsible>
 
-      <AnimatedCollapsible title="Messagerie & Contacts">
-        <SidebarMenuItem>
-          <SidebarLink
-            to="/dashboard/messages"
-            icon={MessageCircle}
-            label="Messages"
-          />
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarLink
-            to="/dashboard/notifications"
-            icon={Bell}
-            label="Notifications"
-          />
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarLink
-            to="/dashboard/contact"
-            icon={GraduationCap}
-            label="Contacts"
-          />
-        </SidebarMenuItem>
-        <SidebarMenuItem>
-          <SidebarLink
-            to="/dashboard/categorie"
-            icon={Folder}
-            label="Catégories"
-          />
-        </SidebarMenuItem>
-      </AnimatedCollapsible>
+      {/* Section Administration - Visible uniquement si l'utilisateur a au moins une permission d'admin */}
+      {hasAnyPermission(['user.read']) && (
+        <AnimatedCollapsible title="Administration">
+          <ProtectedAction permission="user.read" hideIfNoAccess>
+            <SidebarMenuItem>
+              <SidebarLink
+                to="/dashboard/users"
+                icon={GraduationCap}
+                label="Users"
+              />
+            </SidebarMenuItem>
+          </ProtectedAction>
+        </AnimatedCollapsible>
+      )}
+
+      {/* Section Messagerie & Contacts - Visible pour tous */}
+      {hasAnyPermission(['HistoriqueMessage.read', 'notification.read', 'contact.read', 'categorie.read']) && (
+        <AnimatedCollapsible title="Messagerie & Contacts">
+          <ProtectedAction permission="HistoriqueMessage.read" hideIfNoAccess>
+            <SidebarMenuItem>
+              <SidebarLink
+                to="/dashboard/messages"
+                icon={MessageCircle}
+                label="Messages"
+              />
+            </SidebarMenuItem>
+          </ProtectedAction>
+
+          <ProtectedAction permission="notification.read" hideIfNoAccess>
+            <SidebarMenuItem>
+              <SidebarLink
+                to="/dashboard/notifications"
+                icon={Bell}
+                label="Notifications"
+              />
+            </SidebarMenuItem>
+          </ProtectedAction>
+
+          <ProtectedAction permission="contact.read" hideIfNoAccess>
+            <SidebarMenuItem>
+              <SidebarLink
+                to="/dashboard/contact"
+                icon={GraduationCap}
+                label="Contacts"
+              />
+            </SidebarMenuItem>
+          </ProtectedAction>
+
+          <ProtectedAction permission="categorie.read" hideIfNoAccess>
+            <SidebarMenuItem>
+              <SidebarLink
+                to="/dashboard/categorie"
+                icon={Folder}
+                label="Catégories"
+              />
+            </SidebarMenuItem>
+          </ProtectedAction>
+        </AnimatedCollapsible>
+      )}
 
      
     

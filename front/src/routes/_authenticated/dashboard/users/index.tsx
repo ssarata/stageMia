@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { createFileRoute } from '@tanstack/react-router'
 import { UsersIcon } from 'lucide-react';
 import { useState } from 'react';
+import { ProtectedAction } from '@/components/Global/ProtectedAction';
 
 export const Route = createFileRoute('/_authenticated/dashboard/users/')({
   component: RouteComponent,
@@ -17,11 +18,13 @@ function RouteComponent() {
       <div className="flex items-center justify-between p-4 rounded-lg mb-4">
         <h3>Listes des utilisateurs</h3>
         <div className="">
-          <Button
-            onClick={() => setShowAddDialog(true)}
-            className="cursor-pointer hover:bg-blue-600 active:scale-100 hover:text-white">
-            <UsersIcon />
-          </Button>
+          <ProtectedAction permission="user.create" hideIfNoAccess>
+            <Button
+              onClick={() => setShowAddDialog(true)}
+              className="cursor-pointer hover:bg-blue-600 active:scale-100 hover:text-white">
+              <UsersIcon />
+            </Button>
+          </ProtectedAction>
           <AddUser open={showAddDialog} onOpenChange={setShowAddDialog} />
         </div>
       </div>

@@ -11,10 +11,20 @@ export const getAllContacts = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
+    // Le LECTEUR et MIA peuvent voir tous les contacts, les autres voient uniquement les leurs
+    const canSeeAllContacts = req.user.roleName === 'LECTEUR' || req.user.roleName === 'MIA';
+
     const contacts = await prisma.contact.findMany({
-      where: { userId: req.user.id },
+      where: canSeeAllContacts ? {} : { userId: req.user.id },
       include: {
-        categorie: true
+        categorie: true,
+        user: {
+          select: {
+            nom: true,
+            prenom: true,
+            email: true
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -37,14 +47,24 @@ export const getContactById = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const { id } = req.params;
+    const canSeeAllContacts = req.user.roleName === 'LECTEUR' || req.user.roleName === 'MIA';
 
     const contact = await prisma.contact.findFirst({
-      where: {
-        id: parseInt(id),
-        userId: req.user.id
-      },
+      where: canSeeAllContacts
+        ? { id: parseInt(id) }
+        : {
+            id: parseInt(id),
+            userId: req.user.id
+          },
       include: {
-        categorie: true
+        categorie: true,
+        user: {
+          select: {
+            nom: true,
+            prenom: true,
+            email: true
+          }
+        }
       }
     });
 
@@ -112,10 +132,27 @@ export const updateContact = async (req: AuthRequest, res: Response): Promise<vo
     const { id } = req.params;
     const { nom, prenom, telephone, email, adresse, fonction, organisation, notes, categorieId } = req.body;
 
-    const contact = await prisma.contact.updateMany({
+    // Vérifier si le contact existe
+    const existingContact = await prisma.contact.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!existingContact) {
+      res.status(404).json({ error: 'Contact introuvable' });
+      return;
+    }
+
+    // Vérifier si l'utilisateur est le propriétaire du contact
+    if (existingContact.userId !== req.user.id) {
+      res.status(403).json({
+        error: 'Vous ne pouvez pas modifier ce contact car vous n\'en êtes pas le créateur. Seul le créateur du contact peut le modifier.'
+      });
+      return;
+    }
+
+    const contact = await prisma.contact.update({
       where: {
-        id: parseInt(id),
-        userId: req.user.id
+        id: parseInt(id)
       },
       data: {
         nom,
@@ -130,23 +167,16 @@ export const updateContact = async (req: AuthRequest, res: Response): Promise<vo
       }
     });
 
-    if (contact.count === 0) {
-      res.status(404).json({ error: 'Contact introuvable' });
-      return;
-    }
+    // Notifier les administrateurs
+    await notifyAdmins(
+      `${req.user.email} a modifié le contact: ${contact.nom} ${contact.prenom}`,
+      'info'
+    );
 
     const updatedContact = await prisma.contact.findUnique({
       where: { id: parseInt(id) },
       include: { categorie: true }
     });
-
-    // Notifier les administrateurs
-    if (updatedContact) {
-      await notifyAdmins(
-        `${req.user.email} a modifié le contact: ${updatedContact.nom} ${updatedContact.prenom}`,
-        'info'
-      );
-    }
 
     res.json(updatedContact);
   } catch (error) {
@@ -193,20 +223,34 @@ export const searchContacts = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const { query } = req.query;
+    const canSeeAllContacts = req.user.roleName === 'LECTEUR' || req.user.roleName === 'MIA';
+
+    const whereClause: any = {
+      OR: [
+        { nom: { contains: query as string, mode: 'insensitive' } },
+        { prenom: { contains: query as string, mode: 'insensitive' } },
+        { telephone: { contains: query as string } },
+        { email: { contains: query as string, mode: 'insensitive' } },
+        { organisation: { contains: query as string, mode: 'insensitive' } }
+      ]
+    };
+
+    // Le LECTEUR et MIA peuvent chercher dans tous les contacts, les autres dans les leurs
+    if (!canSeeAllContacts) {
+      whereClause.userId = req.user.id;
+    }
 
     const contacts = await prisma.contact.findMany({
-      where: {
-        userId: req.user.id,
-        OR: [
-          { nom: { contains: query as string, mode: 'insensitive' } },
-          { prenom: { contains: query as string, mode: 'insensitive' } },
-          { telephone: { contains: query as string } },
-          { email: { contains: query as string, mode: 'insensitive' } },
-          { organisation: { contains: query as string, mode: 'insensitive' } }
-        ]
-      },
+      where: whereClause,
       include: {
-        categorie: true
+        categorie: true,
+        user: {
+          select: {
+            nom: true,
+            prenom: true,
+            email: true
+          }
+        }
       }
     });
 

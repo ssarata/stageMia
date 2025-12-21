@@ -12,8 +12,9 @@ export const useGetNotifications = (enabled = true) => {
       return res.data;
     },
     enabled,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    refetchInterval: 30000, // Refetch toutes les 30 secondes en plus du temps réel
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -25,6 +26,9 @@ export const useGetUnreadCount = () => {
       const res = await axiosInstance.get("/notifications/unread-count");
       return res.data;
     },
+    refetchInterval: 30000, // Refetch toutes les 30 secondes
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -38,6 +42,7 @@ export const useMarkNotificationAsRead = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || "Erreur lors de la mise à jour";
@@ -57,6 +62,7 @@ export const useMarkAllNotificationsAsRead = () => {
     onSuccess: () => {
       toast.success("Toutes les notifications ont été marquées comme lues");
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || "Erreur lors de la mise à jour";
@@ -76,6 +82,7 @@ export const useDeleteNotification = () => {
     onSuccess: () => {
       toast.success("Notification supprimée avec succès");
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
     },
     onError: (error: any) => {
       const message = error.response?.data?.error || "Erreur lors de la suppression";

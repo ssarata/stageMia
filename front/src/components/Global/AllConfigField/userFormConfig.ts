@@ -41,9 +41,10 @@ export const getUserFormConfig = (roles: any[] = []): FormConfig => ({
     {
       name: "telephone",
       label: "Téléphone",
-      type: "tel",
-      placeholder: "+228 XX XX XX XX",
+      type: "phone",
+      placeholder: "Entrez votre numéro",
       required: true,
+      gridCols: 1,
     },
     {
       name: "roleId",

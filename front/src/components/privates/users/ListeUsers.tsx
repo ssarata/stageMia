@@ -13,6 +13,7 @@ import { USER_COLUMN_LABELS, USER_INITIAL_VISIBLE_COLUMNS } from "../../Global/T
 import EditUser from "./EditUser";
 import AssignRoleDialog from "./AssignRoleDialog";
 import { AdminOnly } from "@/components/Global/ProtectedAction";
+import { usePermissions } from "@/hooks/usePermissions";
 
 // Interface définie localement
 interface Useraffiche {
@@ -37,6 +38,7 @@ const ListeUsers = () => {
   }, [data]);
 
   const { mutate: deleteUser } = useDeleteUser();
+  const { hasPermission, isAdmin } = usePermissions();
 
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -112,15 +114,15 @@ const ListeUsers = () => {
         visibleColumns.actions && {
           headerName: "Actions",
           cellRenderer: createActionCellRenderer<Useraffiche>({
-            onEdit: (data) => handleEdit(data),
-            onDelete: (data) => openConfirmModal(data.id),
-            customActions: [
+            onEdit: hasPermission('user.update') ? (data) => handleEdit(data) : undefined,
+            onDelete: hasPermission('user.delete') ? (data) => openConfirmModal(data.id) : undefined,
+            customActions: isAdmin ? [
               {
                 label: "Attribuer un rôle",
                 icon: <UserCog className="mr-2 h-4 w-4" />,
                 onClick: (data) => handleAssignRole(data),
               },
-            ],
+            ] : [],
           }),
           sortable: false,
           filter: false,

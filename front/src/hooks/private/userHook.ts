@@ -16,7 +16,7 @@ export const useAddUser = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Erreur lors de l'ajout de l'utilisateur";
+      const message = error.response?.data?.error || error.response?.data?.message || "Erreur lors de l'ajout de l'utilisateur";
       toast.error(message);
     },
   });
@@ -58,7 +58,7 @@ export const useUpdateUser = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Erreur lors de la mise à jour";
+      const message = error.response?.data?.error || error.response?.data?.message || "Erreur lors de la mise à jour";
       toast.error(message);
     },
   });
@@ -77,7 +77,7 @@ export const useDeleteUser = () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || "Erreur lors de la suppression";
+      const message = error.response?.data?.error || error.response?.data?.message || "Erreur lors de la suppression";
       toast.error(message);
     },
   });

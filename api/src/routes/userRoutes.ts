@@ -10,6 +10,7 @@ import {
 } from '../controllers/userController.js';
 import authenticateToken from '../middlewares/auth.js';
 import { ensurePermission, ensureAdmin } from '../middlewares/ensurePermission.js';
+import { validatePhone } from '../middlewares/validatePhone.js';
 
 const router = Router();
 
@@ -155,7 +156,7 @@ router.get('/:id', authenticateToken, getUserById);
  *       403:
  *         description: Permission refusée
  */
-router.post('/', authenticateToken, ensurePermission('user.create'), createUser);
+router.post('/', authenticateToken, ensurePermission('user.create'), validatePhone({ field: 'telephone', required: true }), createUser);
 
 /**
  * @swagger
@@ -213,7 +214,7 @@ router.post('/', authenticateToken, ensurePermission('user.create'), createUser)
  *       403:
  *         description: Permission refusée
  */
-router.put('/:id', authenticateToken, ensurePermission('user.update'), updateUser);
+router.put('/:id', authenticateToken, ensurePermission('user.update'), validatePhone({ field: 'telephone', required: false }), updateUser);
 
 /**
  * @swagger

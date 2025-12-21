@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { register, login, forgotPassword, resetPassword, verifyResetToken } from '../controllers/authController.js';
+import { validatePhone } from '../middlewares/validatePhone.js';
 
 const router = Router();
 
@@ -75,7 +76,7 @@ const router = Router();
  *       500:
  *         description: Erreur serveur
  */
-router.post('/register', register);
+router.post('/register', validatePhone({ field: 'telephone', required: true }), register);
 
 /**
  * @swagger

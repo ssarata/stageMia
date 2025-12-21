@@ -146,6 +146,10 @@ export const useSocket = () => {
     socket.on("notification:new", (notification: Notification) => {
       addNotification(notification);
 
+      // Invalider le cache React Query pour mettre à jour l'interface
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
+
       // Toast avec type approprié
       const toastType = notification.type === "error" ? "error" :
                        notification.type === "warning" ? "error" :
