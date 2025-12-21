@@ -48,7 +48,6 @@ export const useSocket = () => {
     // ======== ÉVÉNEMENTS DE CONNEXION ========
     socket.on("connect", () => {
       setConnected(true);
-      toast.success("Connexion en temps réel établie");
     });
 
     socket.on("disconnect", (reason) => {
@@ -60,7 +59,6 @@ export const useSocket = () => {
     });
 
     socket.on("connect_error", () => {
-      toast.error("Erreur de connexion temps réel");
     });
 
     // ======== MESSAGES ========
