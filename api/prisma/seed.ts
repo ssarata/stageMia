@@ -14,7 +14,6 @@ async function main() {
 
   const roles = [
     { nomRole: 'ADMIN', description: 'Administrateur système avec tous les droits' },
-    { nomRole: 'LECTEUR', description: 'le lecteur' },
     { nomRole: 'MIA', description: 'Le personnel de la MIA' }
   ];
 
@@ -121,40 +120,6 @@ async function main() {
     }
   });
   console.log(`✅ ADMIN: ${createdPermissions.length} permissions assignées`);
-
-  // LECTEUR : Lecture seule des contacts et catégories
-  const lecteurRole = createdRoles.find(r => r.nomRole === 'LECTEUR')!;
-  const lecteurPermissions = [
-    // Lecture des contacts et catégories
-    'contact.read',
-    'categorie.read',
-    'notification.read',
-    'HistoriqueMessage.read',
-  ];
-
-  const lecteurPermissionsObjects = lecteurPermissions
-    .map(nomPermission => createdPermissions.find(p => p.nomPermission === nomPermission))
-    .filter(p => p !== undefined);
-
-  // Déconnecter toutes les permissions existantes puis reconnecter les nouvelles
-  await prisma.role.update({
-    where: { id: lecteurRole.id },
-    data: {
-      permissions: {
-        set: [], // Vider d'abord
-      }
-    }
-  });
-
-  await prisma.role.update({
-    where: { id: lecteurRole.id },
-    data: {
-      permissions: {
-        connect: lecteurPermissionsObjects.map(p => ({ id: p!.id }))
-      }
-    }
-  });
-  console.log(`✅ lecteur: ${lecteurPermissionsObjects.length} permissions assignées`);
 
   // MIA : Personnel MIA avec gestion des contacts et messages
   const miaRole = createdRoles.find(r => r.nomRole === 'MIA')!;

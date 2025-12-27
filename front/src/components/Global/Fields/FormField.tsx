@@ -148,11 +148,11 @@ export const FormField = ({
           <div className="relative">
             <Textarea
               placeholder={field.placeholder}
-              {...register(field.name)}
+              {...register(field.name, { required: field.required })}
               rows={4}
               onBlur={handleBlur}
               className={`
-                ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                ${isValid ? "border-green-500 focus:ring-green-500" : ""}
                 ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
               `}
             />
@@ -176,11 +176,11 @@ export const FormField = ({
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder={field.placeholder}
-                {...register(field.name)}
+                {...register(field.name, { required: field.required })}
                 onBlur={handleBlur}
                 className={`
-                  pr-20 
-                  ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                  pr-20
+                  ${isValid ? "border-green-500 focus:ring-green-500" : ""}
                   ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
                 `}
               />
@@ -213,11 +213,11 @@ export const FormField = ({
             <Input
               type="password"
               placeholder={field.placeholder}
-              {...register(field.name)}
+              {...register(field.name, { required: field.required })}
               onBlur={handleBlur}
               className={`
-                pr-10 
-                ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                pr-10
+                ${isValid ? "border-green-500 focus:ring-green-500" : ""}
                 ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
               `}
             />
@@ -240,11 +240,11 @@ export const FormField = ({
             <Input
               type={field.type}
               placeholder={field.placeholder}
-              {...register(field.name)}
+              {...register(field.name, { required: field.required })}
               onBlur={handleBlur}
               className={`
-                pr-10 
-                ${isValid ? "border-green-500 focus:ring-green-500" : ""} 
+                pr-10
+                ${isValid ? "border-green-500 focus:ring-green-500" : ""}
                 ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
               `}
             />

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
+import { sendNotificationEmail } from '../services/emailService.js';
 
 // Obtenir toutes les notifications de l'utilisateur connecté
 export const getAllNotifications = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -34,8 +35,31 @@ export const createNotification = async (req: Request, res: Response): Promise<v
         message,
         userId,
         type: type || 'info'
+      },
+      include: {
+        user: {
+          select: {
+            email: true,
+            nom: true,
+            prenom: true
+          }
+        }
       }
     });
+
+    // Envoyer l'email de notification
+    try {
+      await sendNotificationEmail(
+        notification.user.email,
+        `${notification.user.prenom} ${notification.user.nom}`,
+        notification.message,
+        notification.type
+      );
+      console.log(`✅ Email de notification envoyé à ${notification.user.email}`);
+    } catch (emailError) {
+      console.error('⚠️ Erreur lors de l\'envoi de l\'email de notification:', emailError);
+      // Ne pas bloquer la création de la notification si l'email échoue
+    }
 
     res.status(201).json(notification);
   } catch (error) {

@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
+import { sendNotificationEmail } from '../services/emailService.js';
 
 // Obtenir tous les contacts de l'utilisateur connecté
 export const getAllContacts = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -11,8 +12,8 @@ export const getAllContacts = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    // Le LECTEUR et MIA peuvent voir tous les contacts, les autres voient uniquement les leurs
-    const canSeeAllContacts = req.user.roleName === 'LECTEUR' || req.user.roleName === 'MIA';
+    // MIA peut voir tous les contacts, les autres voient uniquement les leurs
+    const canSeeAllContacts = req.user.roleName === 'MIA';
 
     const contacts = await prisma.contact.findMany({
       where: canSeeAllContacts ? {} : { userId: req.user.id },
@@ -47,7 +48,7 @@ export const getContactById = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const { id } = req.params;
-    const canSeeAllContacts = req.user.roleName === 'LECTEUR' || req.user.roleName === 'MIA';
+    const canSeeAllContacts = req.user.roleName === 'MIA';
 
     const contact = await prisma.contact.findFirst({
       where: canSeeAllContacts
@@ -108,11 +109,35 @@ export const createContact = async (req: AuthRequest, res: Response): Promise<vo
       }
     });
 
+    const notificationMessage = `${req.user.email} a créé un nouveau contact: ${nom} ${prenom} (${telephone})`;
+
     // Notifier les administrateurs
-    await notifyAdmins(
-      `${req.user.email} a créé un nouveau contact: ${nom} ${prenom} (${telephone})`,
-      'info'
-    );
+    await notifyAdmins(notificationMessage, 'info');
+
+    // Envoyer des emails aux administrateurs
+    const adminRole = await prisma.role.findFirst({
+      where: { nomRole: 'ADMIN' }
+    });
+
+    if (adminRole) {
+      const admins = await prisma.user.findMany({
+        where: { roleId: adminRole.id }
+      });
+
+      // Envoyer un email à chaque admin
+      for (const admin of admins) {
+        try {
+          await sendNotificationEmail(
+            admin.email,
+            `${admin.nom} ${admin.prenom}`,
+            notificationMessage,
+            'info'
+          );
+        } catch (error) {
+          console.error(`Erreur lors de l'envoi d'email à ${admin.email}:`, error);
+        }
+      }
+    }
 
     res.status(201).json(contact);
   } catch (error) {
@@ -167,11 +192,35 @@ export const updateContact = async (req: AuthRequest, res: Response): Promise<vo
       }
     });
 
+    const notificationMessage = `${req.user.email} a modifié le contact: ${contact.nom} ${contact.prenom}`;
+
     // Notifier les administrateurs
-    await notifyAdmins(
-      `${req.user.email} a modifié le contact: ${contact.nom} ${contact.prenom}`,
-      'info'
-    );
+    await notifyAdmins(notificationMessage, 'info');
+
+    // Envoyer des emails aux administrateurs
+    const adminRole = await prisma.role.findFirst({
+      where: { nomRole: 'ADMIN' }
+    });
+
+    if (adminRole) {
+      const admins = await prisma.user.findMany({
+        where: { roleId: adminRole.id }
+      });
+
+      // Envoyer un email à chaque admin
+      for (const admin of admins) {
+        try {
+          await sendNotificationEmail(
+            admin.email,
+            `${admin.nom} ${admin.prenom}`,
+            notificationMessage,
+            'info'
+          );
+        } catch (error) {
+          console.error(`Erreur lors de l'envoi d'email à ${admin.email}:`, error);
+        }
+      }
+    }
 
     const updatedContact = await prisma.contact.findUnique({
       where: { id: parseInt(id) },
@@ -223,7 +272,7 @@ export const searchContacts = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const { query } = req.query;
-    const canSeeAllContacts = req.user.roleName === 'LECTEUR' || req.user.roleName === 'MIA';
+    const canSeeAllContacts = req.user.roleName === 'MIA';
 
     const whereClause: any = {
       OR: [
@@ -235,7 +284,7 @@ export const searchContacts = async (req: AuthRequest, res: Response): Promise<v
       ]
     };
 
-    // Le LECTEUR et MIA peuvent chercher dans tous les contacts, les autres dans les leurs
+    // MIA peut chercher dans tous les contacts, les autres dans les leurs
     if (!canSeeAllContacts) {
       whereClause.userId = req.user.id;
     }

@@ -5,7 +5,8 @@ import {
   Users,
   Contact,
   Folder,
-  Loader2
+  Loader2,
+  Bell
 } from 'lucide-react'
 
 export const Route = createFileRoute('/_authenticated/dashboard/')({
@@ -42,7 +43,7 @@ function DashboardHome() {
       </div>
 
       {/* Statistiques principales */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-4">
         {/* Total Utilisateurs */}
         {stats.users.total !== null && (
           <StatsCard
@@ -73,6 +74,15 @@ function DashboardHome() {
             iconClassName="text-green-600"
           />
         )}
+
+        {/* Notifications non lues */}
+        <StatsCard
+          title="Notifications non lues"
+          value={stats.notifications.unread}
+          icon={Bell}
+          description="Notifications en attente"
+          iconClassName="text-orange-600"
+        />
       </div>
     </div>
   )

@@ -9,8 +9,9 @@ import { CONTACT_COLUMN_LABELS, CONTACT_INITIAL_VISIBLE_COLUMNS } from "@/compon
 import ConfirmModal from "@/components/Global/Modal/ConfirModal";
 import AddContact from "./AddContact";
 import EditContact from "./EditContact";
+import ImportContacts from "./ImportContacts";
 import { ShareContactDialog } from "../share/ShareContactDialog";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, FileSpreadsheet } from "lucide-react";
 import type { ColDef } from "ag-grid-community";
 import { ProtectedAction } from "@/components/Global/ProtectedAction";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -22,6 +23,7 @@ interface ContactAffiche {
   email?: string;
   telephone: string;
   adresse?: string;
+  fonction?: string;
   organisation?: string;
   categorie?: { nomCategorie: string };
   createdAt: string;
@@ -35,6 +37,7 @@ const ListeContact = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
   const [contactToShare, setContactToShare] = useState<ContactAffiche | null>(null);
+  const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   const { data: contacts, isLoading, error } = useGetContacts();
   const { mutate: deleteContact } = useDeleteContact();
@@ -90,6 +93,11 @@ const ListeContact = () => {
         visibleColumns.adresse && {
           field: "adresse",
           headerName: "Adresse",
+          valueFormatter: ({ value }) => value || "—",
+        },
+        visibleColumns.fonction && {
+          field: "fonction",
+          headerName: "Fonction",
           valueFormatter: ({ value }) => value || "—",
         },
         visibleColumns.categorie && {
@@ -151,6 +159,17 @@ const ListeContact = () => {
             />
 
             <ProtectedAction permission="contact.create" hideIfNoAccess>
+              <Button
+                onClick={() => setIsImportDialogOpen(true)}
+                variant="outline"
+                className="border-green-600 text-green-600 hover:bg-green-50"
+              >
+                <FileSpreadsheet className="h-4 w-4 mr-2" />
+                Importer Excel
+              </Button>
+            </ProtectedAction>
+
+            <ProtectedAction permission="contact.create" hideIfNoAccess>
               <Button onClick={() => setIsOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Nouveau contact
@@ -208,6 +227,11 @@ const ListeContact = () => {
           }}
         />
       )}
+
+      <ImportContacts
+        open={isImportDialogOpen}
+        onOpenChange={setIsImportDialogOpen}
+      />
     </>
   );
 };

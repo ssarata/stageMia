@@ -10,17 +10,8 @@ import { useGetCategories } from "@/hooks/private/categorieHook";
 import { getContactFormConfig } from "@/components/Global/AllConfigField/contactFormConfig";
 import { DynamicForm } from "@/components/Global/Forms/DynamicForm";
 import type { OpenProps } from "@/interfaces/interfaceTable";
-import * as z from "zod";
-
-const contactSchema = z.object({
-  nom: z.string().min(1, "Le nom est requis"),
-  prenom: z.string().min(1, "Le prénom est requis"),
-  email: z.string().email("Email invalide").or(z.literal("")).optional(),
-  telephone: z.string().min(1, "Le téléphone est requis"),
-  adresse: z.string().optional(),
-  organisation: z.string().optional(),
-  categorieId: z.number().optional(),
-});
+import { contactFormSchema } from "@/validators/allSchema";
+import { CONTACT_FORM_DEFAULTS as DEFAULTS } from "@/components/Global/ResetField/resetField";
 
 const AddContact = ({ open, onOpenChange }: OpenProps) => {
   const { mutate, isPending } = useAddContact();
@@ -48,15 +39,8 @@ const AddContact = ({ open, onOpenChange }: OpenProps) => {
 
         <DynamicForm
           config={formConfig}
-          schema={contactSchema}
-          defaultValues={{
-            nom: "",
-            prenom: "",
-            email: "",
-            telephone: "",
-            adresse: "",
-            organisation: "",
-          }}
+          schema={contactFormSchema}
+          defaultValues={DEFAULTS}
           onSubmit={onSubmit}
           isLoading={isPending}
           submitText="Créer"

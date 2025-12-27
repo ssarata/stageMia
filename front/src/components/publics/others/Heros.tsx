@@ -28,8 +28,8 @@ const Heros = () => {
 
   return (
     <section className="w-full relative overflow-hidden">
-      {/* Fond avec logo et dégradé */}
-      <div className="relative bg-gradient-to-br from-blue-900 via-green-800 to-yellow-700 w-full overflow-hidden flex items-center justify-center"
+      {/* Fond avec dégradé */}
+      <div className="relative bg-gradient-to-br from-[#1A4D7C] via-[#1A4D7C]/80 to-[#2D7A4A]/40 w-full overflow-hidden flex items-center justify-center"
         style={{ minHeight: `${Math.max(sliderHeight, 600)}px` }}
       >
         {/* Particules flottantes animées */}
@@ -41,36 +41,11 @@ const Heros = () => {
           <Brain className="absolute top-1/3 right-1/4 text-blue-300/20 w-8 h-8 animate-pulse" style={{ animationDelay: '2s', animationDuration: '4s' }} />
         </div>
 
-        {/* Logo centré avec effet de transparence et animation */}
-        <div className={`absolute inset-0 flex items-center justify-center opacity-20 transition-all duration-1000 ${isVisible ? 'scale-100 rotate-0' : 'scale-50 rotate-45'}`}>
-          <img
-            src="/mia-logo.png"
-            alt="Logo MIA"
-            className="w-full max-w-2xl h-auto object-contain animate-pulse"
-            style={{ animationDuration: '4s' }}
-            onError={(e) => {
-              // Si l'image n'existe pas, on cache l'élément
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        </div>
-
         {/* Overlay avec dégradé pour meilleure lisibilité */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/50"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/40"></div>
 
         {/* Contenu principal */}
         <div ref={sliderContainerRef} className="relative z-10 w-full h-full flex flex-col justify-center items-center text-center px-4 py-20">
-          <div className={`mb-8 transition-all duration-1000 ${isVisible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-75 -translate-y-10'}`}>
-            <img
-              src="/mia-logo.png"
-              alt="Logo MIA Burkina Faso"
-              className="w-64 h-64 mx-auto drop-shadow-2xl hover:scale-110 transition-transform duration-500"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-
           <h1 className={`text-4xl md:text-7xl font-bold mb-6 text-white drop-shadow-lg transition-all duration-1000 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             Maison de l'Intelligence Artificielle
           </h1>
@@ -85,7 +60,7 @@ const Heros = () => {
             {isAuthenticated ? (
               <Link
                 to="/dashboard"
-                className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-110 hover:-translate-y-1 transition-all duration-300 animate-pulse"
+                className="bg-gradient-to-r from-[#1A4D7C] to-[#2D7A4A] text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-110 hover:-translate-y-1 transition-all duration-300 animate-pulse"
                 style={{ animationDuration: '3s' }}
               >
                 Accéder au Dashboard
@@ -94,13 +69,13 @@ const Heros = () => {
               <>
                 <Link
                   to="/auth/login"
-                  className="bg-gradient-to-r from-blue-600 to-green-600 text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-110 hover:-translate-y-1 transition-all duration-300"
+                  className="bg-gradient-to-r from-[#1A4D7C] to-[#2D7A4A] text-white px-10 py-4 rounded-full font-bold text-lg hover:shadow-2xl hover:scale-110 hover:-translate-y-1 transition-all duration-300"
                 >
                   Se Connecter
                 </Link>
                 <Link
                   to="/auth/register"
-                  className="border-3 border-white bg-white/10 backdrop-blur text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-blue-900 hover:scale-110 hover:-translate-y-1 transition-all duration-300"
+                  className="border-3 border-white bg-white/10 backdrop-blur text-white px-10 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-[#1A4D7C] hover:scale-110 hover:-translate-y-1 transition-all duration-300"
                 >
                   Créer un Compte
                 </Link>

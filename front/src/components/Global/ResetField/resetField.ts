@@ -77,13 +77,12 @@ export const VIDEO_FORM_DEFAULTS = {
 //==========CONTACT==========
 export const CONTACT_FORM_DEFAULTS: ContactFormSchema = {
   nom: "",
-  prenom: undefined,
+  prenom: "",
   telephone: "",
   email: "",
   adresse: "",
   fonction: "",
   organisation: "",
-  notes: "",
   categorieId: 0,
 };
 

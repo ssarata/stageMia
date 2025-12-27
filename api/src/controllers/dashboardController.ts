@@ -10,8 +10,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
     const userId = req.user?.id;
     const isAdmin = req.user?.roleName === 'ADMIN';
     const isMIA = req.user?.roleName === 'MIA';
-    const isLecteur = req.user?.roleName === 'LECTEUR';
-    const canSeeAllContacts = isAdmin || isMIA || isLecteur;
+    const canSeeAllContacts = isAdmin || isMIA;
 
     // Statistiques des utilisateurs (tous les rôles peuvent voir)
     const totalUsers = await prisma.user.count();
@@ -24,7 +23,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
       }
     });
 
-    // Statistiques des contacts - LECTEUR et MIA voient tous les contacts
+    // Statistiques des contacts - MIA voit tous les contacts
     const totalContacts = canSeeAllContacts
       ? await prisma.contact.count()
       : await prisma.contact.count({
@@ -112,7 +111,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response): Promis
           }
         });
 
-    // Statistiques par catégorie de contacts - LECTEUR et MIA voient toutes les catégories
+    // Statistiques par catégorie de contacts - MIA voit toutes les catégories
     const contactsByCategory = canSeeAllContacts
       ? await prisma.categorie.findMany({
           select: {

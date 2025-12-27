@@ -95,8 +95,8 @@ export function DataTable<T>({
   const defaultColDef = useMemo(
     () => ({
       flex: 1,
-     
-      
+      filter: true,
+      sortable: true,
       filterParams: {
         suppressAndOrCondition: true,
         debounceMs: 200,

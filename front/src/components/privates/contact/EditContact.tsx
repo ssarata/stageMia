@@ -9,17 +9,7 @@ import { useUpdateContact } from "@/hooks/private/contactHook";
 import { useGetCategories } from "@/hooks/private/categorieHook";
 import { getContactFormConfig } from "@/components/Global/AllConfigField/contactFormConfig";
 import { DynamicForm } from "@/components/Global/Forms/DynamicForm";
-import * as z from "zod";
-
-const contactSchema = z.object({
-  nom: z.string().min(1, "Le nom est requis"),
-  prenom: z.string().min(1, "Le prénom est requis"),
-  email: z.string().email("Email invalide").or(z.literal("")).optional(),
-  telephone: z.string().min(1, "Le téléphone est requis"),
-  adresse: z.string().optional(),
-  organisation: z.string().optional(),
-  categorieId: z.number().optional(),
-});
+import { contactFormSchema } from "@/validators/allSchema";
 
 interface EditContactProps {
   open: boolean;
@@ -56,15 +46,17 @@ const EditContact = ({ open, onOpenChange, contact }: EditContactProps) => {
 
         <DynamicForm
           config={formConfig}
-          schema={contactSchema}
+          schema={contactFormSchema}
           defaultValues={{
             nom: contact?.nom || "",
             prenom: contact?.prenom || "",
             email: contact?.email || "",
             telephone: contact?.telephone || "",
             adresse: contact?.adresse || "",
+            fonction: contact?.fonction || "",
             organisation: contact?.organisation || "",
-            categorieId: contact?.categorieId || undefined,
+            notes: contact?.notes || "",
+            categorieId: contact?.categorieId || 0,
           }}
           onSubmit={onSubmit}
           isLoading={isPending}

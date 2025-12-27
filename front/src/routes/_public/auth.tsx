@@ -1,5 +1,4 @@
 import { createFileRoute, Link, Outlet } from "@tanstack/react-router";
-import { House } from "lucide-react";
 
 export const Route = createFileRoute("/_public/auth")({
   component: RouteComponent,
@@ -26,9 +25,13 @@ function RouteComponent() {
         <div className="flex justify-center mb-4">
           <Link
             to="/"
-            className="flex items-center justify-center w-10 h-10 rounded-full bg-green-600 text-white shadow-2xl hover:bg-green-700 transition-colors"
+            className="flex items-center justify-center hover:opacity-80 transition-opacity"
           >
-            <House className="w-5 h-5" />
+            <img
+              src="/logo.png"
+              alt="Logo MIA Burkina Faso"
+              className="h-16 w-auto drop-shadow-lg"
+            />
           </Link>
         </div>
 

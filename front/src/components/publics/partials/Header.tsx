@@ -33,14 +33,13 @@ const Header = () => {
         {/* Logo */}
         <Link
           to="/"
-          className="flex items-center text-xl sm:text-2xl font-bold text-gray-900 hover:opacity-80 transition-opacity"
+          className="flex items-center hover:opacity-80 transition-opacity"
         >
-          <div className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full border-2 border-green-600 text-green-600 font-bold">
-            M
-          </div>
-          <span className="ml-2">
-            IA <span className="text-green-600">-BF</span>
-          </span>
+          <img
+            src="/logo.png"
+            alt="Logo MIA Burkina Faso"
+            className="h-12 sm:h-14 w-auto"
+          />
         </Link>
 
         {/* Desktop Navigation */}

@@ -24,7 +24,6 @@ import { Route as AuthenticatedDashboardUsersIndexRouteImport } from './routes/_
 import { Route as AuthenticatedDashboardRoleIndexRouteImport } from './routes/_authenticated/dashboard/role/index'
 import { Route as AuthenticatedDashboardPermissionIndexRouteImport } from './routes/_authenticated/dashboard/permission/index'
 import { Route as AuthenticatedDashboardNotificationsIndexRouteImport } from './routes/_authenticated/dashboard/notifications/index'
-import { Route as AuthenticatedDashboardMessagesIndexRouteImport } from './routes/_authenticated/dashboard/messages/index'
 import { Route as AuthenticatedDashboardContactIndexRouteImport } from './routes/_authenticated/dashboard/contact/index'
 import { Route as AuthenticatedDashboardCategorieIndexRouteImport } from './routes/_authenticated/dashboard/categorie/index'
 
@@ -106,12 +105,6 @@ const AuthenticatedDashboardNotificationsIndexRoute =
     path: '/notifications/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
-const AuthenticatedDashboardMessagesIndexRoute =
-  AuthenticatedDashboardMessagesIndexRouteImport.update({
-    id: '/messages/',
-    path: '/messages/',
-    getParentRoute: () => AuthenticatedDashboardRoute,
-  } as any)
 const AuthenticatedDashboardContactIndexRoute =
   AuthenticatedDashboardContactIndexRouteImport.update({
     id: '/contact/',
@@ -137,7 +130,6 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/categorie': typeof AuthenticatedDashboardCategorieIndexRoute
   '/dashboard/contact': typeof AuthenticatedDashboardContactIndexRoute
-  '/dashboard/messages': typeof AuthenticatedDashboardMessagesIndexRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsIndexRoute
   '/dashboard/permission': typeof AuthenticatedDashboardPermissionIndexRoute
   '/dashboard/role': typeof AuthenticatedDashboardRoleIndexRoute
@@ -154,7 +146,6 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardIndexRoute
   '/dashboard/categorie': typeof AuthenticatedDashboardCategorieIndexRoute
   '/dashboard/contact': typeof AuthenticatedDashboardContactIndexRoute
-  '/dashboard/messages': typeof AuthenticatedDashboardMessagesIndexRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsIndexRoute
   '/dashboard/permission': typeof AuthenticatedDashboardPermissionIndexRoute
   '/dashboard/role': typeof AuthenticatedDashboardRoleIndexRoute
@@ -175,7 +166,6 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/': typeof AuthenticatedDashboardIndexRoute
   '/_authenticated/dashboard/categorie/': typeof AuthenticatedDashboardCategorieIndexRoute
   '/_authenticated/dashboard/contact/': typeof AuthenticatedDashboardContactIndexRoute
-  '/_authenticated/dashboard/messages/': typeof AuthenticatedDashboardMessagesIndexRoute
   '/_authenticated/dashboard/notifications/': typeof AuthenticatedDashboardNotificationsIndexRoute
   '/_authenticated/dashboard/permission/': typeof AuthenticatedDashboardPermissionIndexRoute
   '/_authenticated/dashboard/role/': typeof AuthenticatedDashboardRoleIndexRoute
@@ -195,7 +185,6 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/dashboard/categorie'
     | '/dashboard/contact'
-    | '/dashboard/messages'
     | '/dashboard/notifications'
     | '/dashboard/permission'
     | '/dashboard/role'
@@ -212,7 +201,6 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/categorie'
     | '/dashboard/contact'
-    | '/dashboard/messages'
     | '/dashboard/notifications'
     | '/dashboard/permission'
     | '/dashboard/role'
@@ -232,7 +220,6 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/'
     | '/_authenticated/dashboard/categorie/'
     | '/_authenticated/dashboard/contact/'
-    | '/_authenticated/dashboard/messages/'
     | '/_authenticated/dashboard/notifications/'
     | '/_authenticated/dashboard/permission/'
     | '/_authenticated/dashboard/role/'
@@ -351,13 +338,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardNotificationsIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
-    '/_authenticated/dashboard/messages/': {
-      id: '/_authenticated/dashboard/messages/'
-      path: '/messages'
-      fullPath: '/dashboard/messages'
-      preLoaderRoute: typeof AuthenticatedDashboardMessagesIndexRouteImport
-      parentRoute: typeof AuthenticatedDashboardRoute
-    }
     '/_authenticated/dashboard/contact/': {
       id: '/_authenticated/dashboard/contact/'
       path: '/contact'
@@ -379,7 +359,6 @@ interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardIndexRoute: typeof AuthenticatedDashboardIndexRoute
   AuthenticatedDashboardCategorieIndexRoute: typeof AuthenticatedDashboardCategorieIndexRoute
   AuthenticatedDashboardContactIndexRoute: typeof AuthenticatedDashboardContactIndexRoute
-  AuthenticatedDashboardMessagesIndexRoute: typeof AuthenticatedDashboardMessagesIndexRoute
   AuthenticatedDashboardNotificationsIndexRoute: typeof AuthenticatedDashboardNotificationsIndexRoute
   AuthenticatedDashboardPermissionIndexRoute: typeof AuthenticatedDashboardPermissionIndexRoute
   AuthenticatedDashboardRoleIndexRoute: typeof AuthenticatedDashboardRoleIndexRoute
@@ -393,8 +372,6 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
       AuthenticatedDashboardCategorieIndexRoute,
     AuthenticatedDashboardContactIndexRoute:
       AuthenticatedDashboardContactIndexRoute,
-    AuthenticatedDashboardMessagesIndexRoute:
-      AuthenticatedDashboardMessagesIndexRoute,
     AuthenticatedDashboardNotificationsIndexRoute:
       AuthenticatedDashboardNotificationsIndexRoute,
     AuthenticatedDashboardPermissionIndexRoute:

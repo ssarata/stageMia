@@ -32,9 +32,9 @@ import {
   ChevronUp,
   GraduationCap,
   User2,
-  MessageCircle,
   Bell,
   Folder,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useState, useEffect } from "react";
@@ -142,10 +142,27 @@ export const AppSidebar = () => {
       </SidebarHeader>
       <SidebarSeparator />
 
+      {/* Content */}
+      <SidebarContent>
+        {/* Lien Dashboard - Toujours visible */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarLink
+                  to="/dashboard"
+                  icon={LayoutDashboard}
+                  label="Tableau de bord"
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        <SidebarSeparator />
 
-      {/* Section Administration - Visible uniquement si l'utilisateur a au moins une permission d'admin */}
-      {hasAnyPermission(['user.read']) && (
-        <AnimatedCollapsible title="Administration">
+        {/* Section Administration - Visible uniquement si l'utilisateur a au moins une permission d'admin */}
+        {hasAnyPermission(['user.read']) && (
+          <AnimatedCollapsible title="Administration">
           <ProtectedAction permission="user.read" hideIfNoAccess>
             <SidebarMenuItem>
               <SidebarLink
@@ -159,18 +176,8 @@ export const AppSidebar = () => {
       )}
 
       {/* Section Messagerie & Contacts - Visible pour tous */}
-      {hasAnyPermission(['HistoriqueMessage.read', 'notification.read', 'contact.read', 'categorie.read']) && (
+      {hasAnyPermission(['notification.read', 'contact.read', 'categorie.read']) && (
         <AnimatedCollapsible title="Messagerie & Contacts">
-          <ProtectedAction permission="HistoriqueMessage.read" hideIfNoAccess>
-            <SidebarMenuItem>
-              <SidebarLink
-                to="/dashboard/messages"
-                icon={MessageCircle}
-                label="Messages"
-              />
-            </SidebarMenuItem>
-          </ProtectedAction>
-
           <ProtectedAction permission="notification.read" hideIfNoAccess>
             <SidebarMenuItem>
               <SidebarLink
@@ -202,25 +209,6 @@ export const AppSidebar = () => {
           </ProtectedAction>
         </AnimatedCollapsible>
       )}
-
-     
-    
-
-      {/* Content */}
-      <SidebarContent>
-        {/* Groupe Fonctionnalités */}
-        <SidebarGroup>
-         
-          <SidebarGroupAction>
-            <span className="sr-only">Add Project</span>
-          </SidebarGroupAction>
-          <SidebarGroupContent>
-            <SidebarMenu className="flex flex-col gap-2.5">
-              <SidebarMenuItem>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
       </SidebarContent>
 
       {/* Footer */}

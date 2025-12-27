@@ -38,7 +38,7 @@ export const DynamicForm = <T extends z.ZodType<any, any>>({
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {/* Grille à 2 colonnes */}
       <div className="grid grid-cols-2 gap-4">
         {config.fields.map((field) => (

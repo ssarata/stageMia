@@ -50,6 +50,13 @@ export const getContactFormConfig = (categories: any[] = []): FormConfig => ({
       required: false,
     },
     {
+      name: "fonction",
+      label: "Fonction",
+      type: "text",
+      placeholder: "Poste ou fonction",
+      required: false,
+    },
+    {
       name: "organisation",
       label: "Organisation",
       type: "text",

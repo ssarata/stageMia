@@ -228,8 +228,152 @@ export const sendPasswordResetConfirmationEmail = async (email: string, name: st
   });
 };
 
+export const sendNotificationEmail = async (
+  userEmail: string,
+  userName: string,
+  notificationMessage: string,
+  notificationType: string
+) => {
+  // Email de notification au destinataire
+  const typeColors: { [key: string]: string } = {
+    info: '#2196F3',
+    success: '#4CAF50',
+    warning: '#FF9800',
+    error: '#F44336',
+  };
+
+  const typeEmojis: { [key: string]: string } = {
+    info: 'ℹ️',
+    success: '✅',
+    warning: '⚠️',
+    error: '❌',
+  };
+
+  const color = typeColors[notificationType] || typeColors.info;
+  const emoji = typeEmojis[notificationType] || typeEmojis.info;
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Nouvelle notification</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .container {
+          background-color: #f4f4f4;
+          border-radius: 10px;
+          padding: 30px;
+        }
+        .header {
+          background-color: ${color};
+          color: white;
+          padding: 20px;
+          text-align: center;
+          border-radius: 10px 10px 0 0;
+        }
+        .content {
+          background-color: white;
+          padding: 30px;
+          border-radius: 0 0 10px 10px;
+        }
+        .notification-box {
+          background-color: #f8f9fa;
+          border-left: 4px solid ${color};
+          padding: 15px;
+          margin: 20px 0;
+        }
+        .footer {
+          margin-top: 20px;
+          text-align: center;
+          color: #666;
+          font-size: 12px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>${emoji} Nouvelle notification</h1>
+        </div>
+        <div class="content">
+          <p>Bonjour ${userName},</p>
+
+          <p>Vous avez reçu une nouvelle notification :</p>
+
+          <div class="notification-box">
+            <strong>${notificationMessage}</strong>
+          </div>
+
+          <p>Connectez-vous à votre compte MIA pour voir tous les détails.</p>
+
+          <p>Cordialement,<br>L'équipe MIA</p>
+        </div>
+        <div class="footer">
+          <p>Cet email a été envoyé automatiquement, merci de ne pas y répondre.</p>
+          <p>&copy; ${new Date().getFullYear()} MIA - Gestion de Contacts. Tous droits réservés.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  // Vérifier si on est en mode développement via NODE_ENV
+  const isDevMode = process.env.NODE_ENV === 'development';
+
+  // Email de production centralisé
+  const productionEmail = process.env.PRODUCTION_EMAIL || 'contact.miabf@gmail.com';
+
+  if (isDevMode) {
+    // En mode développement, envoyer à un email de test
+    const devEmail = process.env.PRODUCTION_EMAIL || 'saratasankara598@gmail.com';
+
+    const htmlWithRecipientInfo = html.replace(
+      `<p>Bonjour ${userName},</p>`,
+      `<div style="background-color: #e3f2fd; padding: 10px; margin: 15px 0; border-radius: 5px;">
+        <strong>📧 Destinataire prévu:</strong> ${userName} (${userEmail})
+      </div>
+      <p>Bonjour,</p>`
+    );
+
+    await sendEmail({
+      to: devEmail,
+      subject: `${emoji} Notification pour ${userName} - MIA`,
+      html: htmlWithRecipientInfo,
+    });
+
+    console.log(`📧 [DEV] Email envoyé à ${devEmail} (destinataire prévu: ${userEmail})`);
+  } else {
+    // En mode production, envoyer à l'email centralisé MIA
+    const htmlWithUserInfo = html.replace(
+      `<p>Bonjour ${userName},</p>`,
+      `<div style="background-color: #e3f2fd; padding: 10px; margin: 15px 0; border-radius: 5px;">
+        <strong>📧 Notification pour:</strong> ${userName} (${userEmail})
+      </div>
+      <p>Bonjour,</p>`
+    );
+
+    await sendEmail({
+      to: productionEmail,
+      subject: `${emoji} Notification pour ${userName} - MIA`,
+      html: htmlWithUserInfo,
+    });
+
+    console.log(`📧 [PROD] Email envoyé à ${productionEmail} (pour ${userEmail})`);
+  }
+};
+
 export default {
   sendEmail,
   sendPasswordResetEmail,
   sendPasswordResetConfirmationEmail,
+  sendNotificationEmail,
 };

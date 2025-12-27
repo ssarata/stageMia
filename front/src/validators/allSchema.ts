@@ -51,13 +51,27 @@ export type MessageFormSchema = z.infer<typeof messageFormSchema>;
 //================= ContactForm =================//
 export const contactFormSchema = z.object({
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  prenom: z.union([z.string().min(2, "Le prénom doit contenir au moins 2 caractères"), z.literal("")]).optional(),
+  prenom: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().optional()
+  ),
   telephone: z.string().min(8, "Le téléphone doit contenir au moins 8 caractères"),
-  email: z.union([z.string().email("Email invalide"), z.literal("")]).optional(),
-  adresse: z.string().optional(),
-  fonction: z.string().optional(),
-  organisation: z.string().optional(),
-  notes: z.string().optional(),
+  email: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().optional()
+  ),
+  adresse: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().optional()
+  ),
+  fonction: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().optional()
+  ),
+  organisation: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().optional()
+  ),
   categorieId: z.coerce.number().int().positive("Veuillez sélectionner une catégorie"),
 });
 export type ContactFormSchema = z.infer<typeof contactFormSchema>;
