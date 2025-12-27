@@ -18,6 +18,7 @@ export const getLoginFormConfig = (): FormConfig => ({
       placeholder: "******",
       required: true,
       gridCols: 1,
+      showPasswordToggle: true,
     },
   ],
 });
@@ -72,6 +73,7 @@ export const getRegisterFormConfig = (): FormConfig => ({
       placeholder: "******",
       required: true,
       gridCols: 1,
+      showPasswordToggle: true,
     },
     {
       name: "password_confirmation",
@@ -80,6 +82,7 @@ export const getRegisterFormConfig = (): FormConfig => ({
       placeholder: "******",
       required: true,
       gridCols: 1,
+      showPasswordToggle: true,
     },
   ],
 });
@@ -119,6 +122,7 @@ export const getResetPasswordFormConfig = (): FormConfig => ({
       type: "password",
       placeholder: "******",
       required: true,
+      showPasswordToggle: true,
     },
     {
       name: "password_confirmation",
@@ -126,6 +130,7 @@ export const getResetPasswordFormConfig = (): FormConfig => ({
       type: "password",
       placeholder: "******",
       required: true,
+      showPasswordToggle: true,
     },
   ],
 });
