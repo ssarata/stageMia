@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
-import { sendNotificationEmail } from '../services/emailService.js';
+import { sendNotificationEmail } from '../services/nodemailerService.js';
 
 // Obtenir toutes les notifications de l'utilisateur connecté
 export const getAllNotifications = async (req: AuthRequest, res: Response): Promise<void> => {

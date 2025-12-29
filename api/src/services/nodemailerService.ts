@@ -1,21 +1,17 @@
-import * as brevo from '@getbrevo/brevo';
+import * as nodemailer from 'nodemailer';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Initialiser Brevo
-let apiInstance: brevo.TransactionalEmailsApi | null = null;
-
-const getBrevoInstance = (): brevo.TransactionalEmailsApi => {
-  if (!apiInstance) {
-    if (!process.env.BREVO_API_KEY) {
-      throw new Error('BREVO_API_KEY non configurée dans les variables d\'environnement');
-    }
-
-    apiInstance = new brevo.TransactionalEmailsApi();
-    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
-  }
-  return apiInstance;
+// Créer le transporteur Nodemailer
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD, // Mot de passe d'application Gmail
+    },
+  });
 };
 
 interface SendEmailParams {
@@ -26,39 +22,35 @@ interface SendEmailParams {
 }
 
 export const sendEmail = async ({ to, subject, html, text }: SendEmailParams) => {
-  if (!process.env.BREVO_API_KEY) {
-    console.warn('⚠️ BREVO_API_KEY non configurée - Email non envoyé (mode développement)');
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    console.warn('⚠️ GMAIL_USER ou GMAIL_APP_PASSWORD non configuré - Email non envoyé (mode développement)');
     console.log(`Email à envoyer à ${to}: ${subject}`);
     return { messageId: 'dev-mode-no-email' };
   }
 
   try {
-    const api = getBrevoInstance();
+    const transporter = createTransporter();
 
-    const sendSmtpEmail = new brevo.SendSmtpEmail();
-    sendSmtpEmail.sender = {
-      email: process.env.BREVO_SENDER_EMAIL || 'saratasankara598@gmail.com',
-      name: process.env.BREVO_SENDER_NAME || 'MIA'
+    const mailOptions = {
+      from: `${process.env.GMAIL_SENDER_NAME || 'MIA-BF'} <${process.env.GMAIL_USER}>`,
+      to,
+      subject,
+      html,
+      text: text || undefined,
     };
-    sendSmtpEmail.to = [{ email: to }];
-    sendSmtpEmail.subject = subject;
-    sendSmtpEmail.htmlContent = html;
-    if (text) {
-      sendSmtpEmail.textContent = text;
-    }
 
-    const response = await api.sendTransacEmail(sendSmtpEmail);
-    console.log('✅ Email envoyé avec succès via Brevo:', response);
-    return response;
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✅ Email envoyé avec succès via Nodemailer:', info.messageId);
+    return info;
   } catch (error: any) {
-    console.error('❌ Erreur lors de l\'envoi de l\'email via Brevo:', error);
+    console.error('❌ Erreur lors de l\'envoi de l\'email via Nodemailer:', error);
     throw new Error(`Échec de l'envoi de l'email: ${error.message}`);
   }
 };
 
 export const sendPasswordResetEmail = async (email: string, resetToken: string, name: string) => {
-  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+  const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const resetUrl = `${baseUrl}/auth/resetpwd?token=${resetToken}`;
 
   const html = `
     <!DOCTYPE html>

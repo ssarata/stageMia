@@ -45,6 +45,18 @@ export const useGetCategorie = (id: number) => {
   });
 };
 
+// Read - Get categorie by ID with contacts
+export const useGetCategorieById = (id: number, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: ["categories", id, "contacts"],
+    queryFn: async () => {
+      const res = await axiosInstance.get(`/categories/${id}`);
+      return res.data;
+    },
+    enabled: !!id && enabled,
+  });
+};
+
 // Update - Update existing categorie
 export const useUpdateCategorie = () => {
   const queryClient = useQueryClient();

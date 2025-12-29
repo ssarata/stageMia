@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
-import { sendNotificationEmail } from '../services/emailService.js';
+import { sendNotificationEmail } from '../services/nodemailerService.js';
 
 interface ContactRow {
   nom: string;
@@ -104,8 +104,24 @@ export const importContacts = async (req: AuthRequest, res: Response): Promise<v
       }
     }
 
+    // Envoyer un email à l'utilisateur qui a importé
+    const userMessage = successCount > 0
+      ? `Vous avez importé ${successCount} contact(s) avec succès${errorCount > 0 ? `. ${errorCount} erreur(s) ont été rencontrées.` : '.'}`
+      : `L'importation a échoué avec ${errorCount} erreur(s).`;
+
+    try {
+      await sendNotificationEmail(
+        req.user.email,
+        `${req.user.nom} ${req.user.prenom}`,
+        userMessage,
+        successCount > 0 ? 'success' : 'error'
+      );
+    } catch (error) {
+      console.error(`Erreur lors de l'envoi d'email à ${req.user.email}:`, error);
+    }
+
     // Notifier les administrateurs après l'import
-    const notificationMessage = `${req.user.email} a importé ${successCount} contact(s) via fichier Excel (${errorCount} erreur(s))`;
+    const notificationMessage = `${req.user.nom} ${req.user.prenom} (${req.user.email}) a importé ${successCount} contact(s) via fichier Excel (${errorCount} erreur(s))`;
 
     await notifyAdmins(notificationMessage, successCount > 0 ? 'success' : 'warning');
 

@@ -186,3 +186,34 @@ html {
 .dark * {
   scrollbar-color: oklch(0.556 0 0 / 30%) transparent;
 }
+
+/* Fix pour react-phone-input-2 - assurer la visibilité du texte */
+.react-tel-input .form-control {
+  color: hsl(var(--foreground)) !important;
+  background-color: transparent !important;
+}
+
+.dark .react-tel-input .form-control {
+  color: hsl(var(--foreground)) !important;
+}
+
+.react-tel-input input::placeholder {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.react-tel-input .selected-flag {
+  background-color: hsl(var(--background)) !important;
+}
+
+.react-tel-input .country-list {
+  background-color: hsl(var(--popover)) !important;
+  color: hsl(var(--popover-foreground)) !important;
+}
+
+.react-tel-input .country-list .country:hover {
+  background-color: hsl(var(--accent)) !important;
+}
+
+.react-tel-input .country-list .country.highlight {
+  background-color: hsl(var(--accent)) !important;
+}

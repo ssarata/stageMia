@@ -8,6 +8,7 @@ export const loginFormSchema = z.object({
 export type LoginFormSchema = z.infer<typeof loginFormSchema>;
 
 //================= UserForm =================//
+// Schéma pour créer un utilisateur (avec mot de passe obligatoire)
 export const userFormSchema = z.object({
   nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
   prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
@@ -20,8 +21,21 @@ export const userFormSchema = z.object({
 });
 export type UserFormSchema = z.infer<typeof userFormSchema>;
 
+// Schéma pour modifier un utilisateur (sans mot de passe)
+export const editUserFormSchema = z.object({
+  nom: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  prenom: z.string().min(2, "Le prénom doit contenir au moins 2 caractères"),
+  email: z.string().email("Email invalide"),
+  telephone: z.string().min(8, "Le numéro de téléphone doit contenir au moins 8 caractères"),
+  adresse: z.string().min(3, "L'adresse doit contenir au moins 5 caractères"),
+  sexe: z.enum(["M", "F", "Autre"]).optional(),
+  roleId: z.coerce.number().int().positive("Veuillez sélectionner un rôle").optional(),
+});
+export type EditUserFormSchema = z.infer<typeof editUserFormSchema>;
+
 // Alias pour compatibilité
 export const usersFormSchema = userFormSchema;
+export const editUsersFormSchema = editUserFormSchema;
 
 
 

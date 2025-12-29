@@ -114,6 +114,14 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     const { id } = req.params;
     const { nom, prenom, email, adresse, telephone, motDePasse, sexe, roleId } = req.body;
 
+    // Empêcher la modification du mot de passe via cette route
+    if (motDePasse) {
+      res.status(400).json({
+        error: 'Le mot de passe ne peut pas être modifié via cette route. Utilisez la route de changement de mot de passe dédiée.'
+      });
+      return;
+    }
+
     const updateData: any = {
       nom,
       prenom,
@@ -123,10 +131,6 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
       sexe,
       roleId
     };
-
-    if (motDePasse) {
-      updateData.motDePasse = await bcrypt.hash(motDePasse, 10);
-    }
 
     const user = await prisma.user.update({
       where: { id: parseInt(id) },

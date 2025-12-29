@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { register, login, forgotPassword, resetPassword, verifyResetToken } from '../controllers/authController.js';
+import { register, login, forgotPassword, resetPassword, verifyResetToken, updateProfile, updatePassword } from '../controllers/authController.js';
 import { validatePhone } from '../middlewares/validatePhone.js';
+import authenticateToken from '../middlewares/auth.js';
 
 const router = Router();
 
@@ -239,5 +240,105 @@ router.post('/reset-password', resetPassword);
  *         description: Erreur serveur
  */
 router.get('/verify-token/:token', verifyResetToken);
+
+/**
+ * @swagger
+ * /api/auth/profile:
+ *   put:
+ *     summary: Mettre à jour le profil utilisateur
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nom:
+ *                 type: string
+ *                 example: Nouveau Nom
+ *               prenom:
+ *                 type: string
+ *                 example: Nouveau Prénom
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: newemail@example.com
+ *               telephone:
+ *                 type: string
+ *                 example: "+22670123456"
+ *               adresse:
+ *                 type: string
+ *                 example: Nouvelle adresse
+ *     responses:
+ *       200:
+ *         description: Profil mis à jour avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Profil mis à jour avec succès
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Email ou téléphone déjà utilisé
+ *       401:
+ *         description: Non authentifié
+ *       500:
+ *         description: Erreur serveur
+ */
+router.put('/profile', authenticateToken, updateProfile);
+
+/**
+ * @swagger
+ * /api/auth/password:
+ *   put:
+ *     summary: Changer le mot de passe
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 format: password
+ *                 example: ancien123
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 6
+ *                 example: nouveau123
+ *     responses:
+ *       200:
+ *         description: Mot de passe modifié avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Mot de passe modifié avec succès
+ *       400:
+ *         description: Mot de passe actuel incorrect ou nouveau mot de passe invalide
+ *       401:
+ *         description: Non authentifié
+ *       500:
+ *         description: Erreur serveur
+ */
+router.put('/password', authenticateToken, updatePassword);
 
 export default router;

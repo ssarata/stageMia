@@ -72,7 +72,22 @@ export const useForgotPassword = () => {
   });
 };
 
-
+// --- Reset Password ---
+export const useResetPassword = () => {
+  return useMutation<{ message: string }, unknown, { token: string; newPassword: string }>({
+    mutationFn: async (payload) => {
+      const res = await axiosInstance.post("/auth/reset-password", payload);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      toast.success(data.message || "Mot de passe réinitialisé avec succès");
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || "Erreur lors de la réinitialisation";
+      toast.error(errorMessage);
+    },
+  });
+};
 
 // --- Verify Token ---
 export const useVerifyToken = (token: string, enabled: boolean = true) => {
@@ -87,11 +102,61 @@ export const useVerifyToken = (token: string, enabled: boolean = true) => {
   });
 };
 
+// --- Update Profile ---
+export const useUpdateProfile = () => {
+  const queryClient = useQueryClient();
+  const { updateUser } = useAuthStore();
+
+  return useMutation({
+    mutationFn: async (data: {
+      nom?: string;
+      prenom?: string;
+      email?: string;
+      telephone?: string;
+      adresse?: string;
+    }) => {
+      const res = await axiosInstance.put("/auth/profile", data);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.user) {
+        updateUser(data.user);
+      }
+      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      toast.success("Profil mis à jour avec succès");
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || "Erreur lors de la mise à jour du profil";
+      toast.error(errorMessage);
+    },
+  });
+};
+
+// --- Update Password ---
+export const useUpdatePassword = () => {
+  return useMutation({
+    mutationFn: async (data: {
+      currentPassword: string;
+      newPassword: string;
+    }) => {
+      const res = await axiosInstance.put("/auth/password", data);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Mot de passe modifié avec succès");
+    },
+    onError: (error: any) => {
+      const errorMessage = error?.response?.data?.message || "Erreur lors de la modification du mot de passe";
+      toast.error(errorMessage);
+    },
+  });
+};
+
 // --- Logout ---
 export const useLogout = () => {
   const queryClient = useQueryClient();
   const logoutStore = useAuthStore((s) => s.logout);
-  
+
   return useMutation({
     mutationFn: async () => {
       const res = await axiosInstance.post("/auth/logout");

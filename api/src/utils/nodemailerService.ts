@@ -1,17 +1,14 @@
-import { Resend } from 'resend';
+import * as nodemailer from 'nodemailer';
 
-// Instance Resend (sera initialisée au premier usage)
-let resend: Resend | null = null;
-
-// Fonction pour obtenir l'instance Resend
-const getResendInstance = (): Resend => {
-  if (!resend) {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY non configurée dans les variables d\'environnement');
-    }
-    resend = new Resend(process.env.RESEND_API_KEY);
-  }
-  return resend;
+// Créer le transporteur Nodemailer
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
 };
 
 interface ContactData {
@@ -26,7 +23,7 @@ interface ContactData {
 }
 
 /**
- * Envoie un contact par email
+ * Envoie un contact par email via Nodemailer
  * @param recipientEmail - Email du destinataire
  * @param contact - Données du contact à partager
  * @param senderName - Nom de l'expéditeur
@@ -36,10 +33,12 @@ export const sendContactByEmail = async (
   contact: ContactData,
   senderName: string
 ): Promise<void> => {
-  try {
-    // Envoyer directement à l'email du destinataire (pas de redirection)
-    const finalRecipientEmail = recipientEmail;
+  // En mode développement, envoyer à l'email de test au lieu de l'email réel
+  const isDevMode = process.env.NODE_ENV === 'development';
+  const devEmail = 'saratasankara598@gmail.com';
+  const actualRecipient = isDevMode ? devEmail : recipientEmail;
 
+  try {
     const contactHTML = `
       <!DOCTYPE html>
       <html>
@@ -95,6 +94,9 @@ export const sendContactByEmail = async (
             <h2>📇 Contact partagé via MIA</h2>
           </div>
           <div class="content">
+            ${isDevMode ? `<div style="background-color: #e3f2fd; padding: 10px; margin: 15px 0; border-radius: 5px;">
+              <strong>📧 [MODE DEV]</strong> Destinataire prévu: ${recipientEmail}
+            </div>` : ''}
             <p>Bonjour,</p>
             <p><strong>${senderName}</strong> a partagé un contact avec vous via l'application MIA.</p>
 
@@ -139,23 +141,25 @@ ${contact.notes ? `Notes: ${contact.notes}` : ''}
 Ce message a été envoyé automatiquement par MIA - Messaging and Interaction Application
     `.trim();
 
-    const resendInstance = getResendInstance();
-    const { data, error } = await resendInstance.emails.send({
-      from: process.env.EMAIL_FROM || 'MIA <onboarding@resend.dev>',
-      to: finalRecipientEmail,
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      from: `${process.env.GMAIL_SENDER_NAME || 'MIA-BF'} <${process.env.GMAIL_USER}>`,
+      to: actualRecipient,
       subject: `📇 ${senderName} a partagé un contact avec vous`,
+      html: contactHTML,
       text: contactText,
-      html: contactHTML
-    });
+    };
 
-    if (error) {
-      console.error('Erreur Resend:', error);
-      throw new Error(error.message || 'Impossible d\'envoyer l\'email');
+    const info = await transporter.sendMail(mailOptions);
+
+    if (isDevMode) {
+      console.log(`📧 [DEV] Email envoyé à ${actualRecipient} (destinataire prévu: ${recipientEmail})`, info.messageId);
+    } else {
+      console.log(`✅ [PROD] Email de partage envoyé à ${recipientEmail} via Nodemailer`, info.messageId);
     }
-
-    console.log(`✅ Email de partage envoyé à ${finalRecipientEmail}`, data);
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email:', error);
+    console.error('Erreur lors de l\'envoi de l\'email via Nodemailer:', error);
     throw error;
   }
 };
@@ -164,5 +168,5 @@ Ce message a été envoyé automatiquement par MIA - Messaging and Interaction A
  * Vérifie si la configuration email est disponible
  */
 export const isEmailConfigured = (): boolean => {
-  return !!process.env.RESEND_API_KEY;
+  return !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
 };

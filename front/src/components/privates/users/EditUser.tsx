@@ -6,9 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useUpdateUser } from "@/hooks/private/userHook";
-import { usersFormSchema } from "@/validators/allSchema";
+import { editUsersFormSchema } from "@/validators/allSchema";
 import { useGetRoles } from "@/hooks/private/roleHook";
-import { getUserFormConfig } from "@/components/Global/AllConfigField/userFormConfig";
+import { getEditUserFormConfig } from "@/components/Global/AllConfigField/userFormConfig";
 import { DynamicForm } from "@/components/Global/Forms/DynamicForm";
 
 interface EditUserProps {
@@ -21,7 +21,7 @@ const EditUser = ({ open, onOpenChange, user }: EditUserProps) => {
   const { mutate, isPending } = useUpdateUser();
   const { data: listesRoles } = useGetRoles();
 
-  const formConfig = getUserFormConfig(listesRoles || []);
+  const formConfig = getEditUserFormConfig(listesRoles || []);
 
   const onSubmit = (data: any) => {
     mutate(
@@ -46,14 +46,13 @@ const EditUser = ({ open, onOpenChange, user }: EditUserProps) => {
 
         <DynamicForm
           config={formConfig}
-          schema={usersFormSchema}
+          schema={editUsersFormSchema}
           defaultValues={{
             nom: user?.nom || "",
             prenom: user?.prenom || "",
             email: user?.email || "",
             telephone: user?.telephone || "",
             adresse: user?.adresse || "",
-            motDePasse: "",
             roleId: user?.roleId || undefined,
           }}
           onSubmit={onSubmit}

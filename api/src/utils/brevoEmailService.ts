@@ -1,17 +1,19 @@
-import { Resend } from 'resend';
+import * as brevo from '@getbrevo/brevo';
 
-// Instance Resend (sera initialisée au premier usage)
-let resend: Resend | null = null;
+// Instance Brevo (sera initialisée au premier usage)
+let apiInstance: brevo.TransactionalEmailsApi | null = null;
 
-// Fonction pour obtenir l'instance Resend
-const getResendInstance = (): Resend => {
-  if (!resend) {
-    if (!process.env.RESEND_API_KEY) {
-      throw new Error('RESEND_API_KEY non configurée dans les variables d\'environnement');
+// Fonction pour obtenir l'instance Brevo
+const getBrevoInstance = (): brevo.TransactionalEmailsApi => {
+  if (!apiInstance) {
+    if (!process.env.BREVO_API_KEY) {
+      throw new Error('BREVO_API_KEY non configurée dans les variables d\'environnement');
     }
-    resend = new Resend(process.env.RESEND_API_KEY);
+
+    apiInstance = new brevo.TransactionalEmailsApi();
+    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
   }
-  return resend;
+  return apiInstance;
 };
 
 interface ContactData {
@@ -26,7 +28,7 @@ interface ContactData {
 }
 
 /**
- * Envoie un contact par email
+ * Envoie un contact par email via Brevo
  * @param recipientEmail - Email du destinataire
  * @param contact - Données du contact à partager
  * @param senderName - Nom de l'expéditeur
@@ -37,9 +39,6 @@ export const sendContactByEmail = async (
   senderName: string
 ): Promise<void> => {
   try {
-    // Envoyer directement à l'email du destinataire (pas de redirection)
-    const finalRecipientEmail = recipientEmail;
-
     const contactHTML = `
       <!DOCTYPE html>
       <html>
@@ -139,23 +138,22 @@ ${contact.notes ? `Notes: ${contact.notes}` : ''}
 Ce message a été envoyé automatiquement par MIA - Messaging and Interaction Application
     `.trim();
 
-    const resendInstance = getResendInstance();
-    const { data, error } = await resendInstance.emails.send({
-      from: process.env.EMAIL_FROM || 'MIA <onboarding@resend.dev>',
-      to: finalRecipientEmail,
-      subject: `📇 ${senderName} a partagé un contact avec vous`,
-      text: contactText,
-      html: contactHTML
-    });
+    const api = getBrevoInstance();
 
-    if (error) {
-      console.error('Erreur Resend:', error);
-      throw new Error(error.message || 'Impossible d\'envoyer l\'email');
-    }
+    const sendSmtpEmail = new brevo.SendSmtpEmail();
+    sendSmtpEmail.sender = {
+      email: process.env.BREVO_SENDER_EMAIL || 'saratasankara598@gmail.com',
+      name: process.env.BREVO_SENDER_NAME || 'MIA'
+    };
+    sendSmtpEmail.to = [{ email: recipientEmail }];
+    sendSmtpEmail.subject = `📇 ${senderName} a partagé un contact avec vous`;
+    sendSmtpEmail.htmlContent = contactHTML;
+    sendSmtpEmail.textContent = contactText;
 
-    console.log(`✅ Email de partage envoyé à ${finalRecipientEmail}`, data);
+    const response = await api.sendTransacEmail(sendSmtpEmail);
+    console.log(`✅ Email de partage envoyé à ${recipientEmail} via Brevo`, response);
   } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email:', error);
+    console.error('Erreur lors de l\'envoi de l\'email via Brevo:', error);
     throw error;
   }
 };
@@ -164,5 +162,5 @@ Ce message a été envoyé automatiquement par MIA - Messaging and Interaction A
  * Vérifie si la configuration email est disponible
  */
 export const isEmailConfigured = (): boolean => {
-  return !!process.env.RESEND_API_KEY;
+  return !!process.env.BREVO_API_KEY;
 };

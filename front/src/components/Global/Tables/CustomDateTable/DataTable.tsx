@@ -1,11 +1,12 @@
-import { useMemo, useEffect, useState } from "react";
+import { useMemo, useEffect, useState, useRef } from "react";
 import { AgGridReact } from "ag-grid-react";
 import { themeQuartz } from "ag-grid-community";
 import { useTheme } from "@/components/providers/theme-provider";
 import type { ColDef, GridOptions } from "ag-grid-community";
-import { Users } from "lucide-react";
+import { Users, Search } from "lucide-react";
 import animationData from '../../../../assets/lottie/loading.json';
 import Lottie from 'lottie-react';
+import { Input } from "@/components/ui/input";
 
 
 interface DataTableProps<T> {
@@ -43,18 +44,17 @@ export function DataTable<T>({
   statsLabel = "élément(s)",
 }: DataTableProps<T>) {
   const { theme } = useTheme();
-
-  //délai minimum de 3 secondes
+  const gridRef = useRef<AgGridReact<T>>(null);
+  const [searchText, setSearchText] = useState("");
   const [showLoader, setShowLoader] = useState(isLoading);
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
 
-
     if (isLoading) {
       setShowLoader(true);
     } else {
-      timer = setTimeout(() => setShowLoader(false), 500); 
+      timer = setTimeout(() => setShowLoader(false), 500);
     }
 
     return () => clearTimeout(timer);
@@ -95,7 +95,6 @@ export function DataTable<T>({
   const defaultColDef = useMemo(
     () => ({
       flex: 1,
-      filter: true,
       sortable: true,
       filterParams: {
         suppressAndOrCondition: true,
@@ -105,33 +104,26 @@ export function DataTable<T>({
     []
   );
 
-  // on utilise showLoader au lieu de isLoading
+  // Fonction de recherche globale
+  const onSearchChange = (value: string) => {
+    setSearchText(value);
+    gridRef.current?.api?.setGridOption("quickFilterText", value);
+  };
+
   if (showLoader) {
     return (
-      // <div className="flex items-center justify-center min-h-[400px] animate-fade-in">
-      //   <div className="text-center space-y-4">
-      //     <GridLoader
-      //       color={theme === "dark" ? "#ffffff" : "#000000"}
-      //       size={40}
-      //     />
-      //     <p className="text-sm text-muted-foreground">
-      //       Chargement des données...
-      //     </p>
-      //   </div>
-      // </div>
-
       <div className="flex items-center justify-center min-h-[400px] animate-fade-in">
-      <div className="text-center space-y-4">
-        <Lottie 
-          animationData={animationData}
-          loop={true}
-          style={{ width: 200, height: 200 }}
-        />
-        <p className="text-sm text-muted-foreground">
-          Chargement des données...
-        </p>
+        <div className="text-center space-y-4">
+          <Lottie
+            animationData={animationData}
+            loop={true}
+            style={{ width: 200, height: 200 }}
+          />
+          <p className="text-sm text-muted-foreground">
+            Chargement des données...
+          </p>
+        </div>
       </div>
-    </div>
     );
   }
 
@@ -152,17 +144,35 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-4">
-      {showStats && data && data.length > 0 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground px-2">
-          <div className="flex items-center gap-2">
-            <Users /> : <span className="font-medium text-foreground">{data.length}</span> {statsLabel}
-          </div>
+      {/* Barre de recherche globale et stats */}
+      <div className="flex items-center justify-between gap-4">
+        {/* Barre de recherche */}
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Rechercher dans le tableau..."
+            value={searchText}
+            onChange={(e) => onSearchChange(e.target.value)}
+            className="pl-10"
+          />
         </div>
-      )}
+
+        {/* Stats */}
+        {showStats && data && data.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Users className="h-4 w-4" />
+            <span className="font-medium text-foreground">{data.length}</span>
+            <span>{statsLabel}</span>
+          </div>
+        )}
+      </div>
+
       <div className="rounded-lg border bg-card">
         {data?.length ? (
           <div style={{ height, width: "100%" }}>
             <AgGridReact<T>
+              ref={gridRef}
               theme={customTheme}
               rowData={data}
               columnDefs={columnDefs}

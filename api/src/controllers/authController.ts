@@ -26,6 +26,30 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     // Hasher le mot de passe
     const hashedPassword = await bcrypt.hash(motDePasse, 10);
 
+    // Si pas de roleId fourni, utiliser le rôle MIA par défaut
+    let finalRoleId = roleId;
+    if (!finalRoleId) {
+      const miaRole = await prisma.role.findUnique({
+        where: { nomRole: 'MIA' }
+      });
+      finalRoleId = miaRole?.id;
+    }
+
+    if (!finalRoleId) {
+      res.status(500).json({ error: 'Aucun rôle disponible pour l\'inscription' });
+      return;
+    }
+
+    // Vérifier que le rôle existe
+    const roleExists = await prisma.role.findUnique({
+      where: { id: finalRoleId }
+    });
+
+    if (!roleExists) {
+      res.status(400).json({ error: 'Le rôle spécifié n\'existe pas' });
+      return;
+    }
+
     // Créer l'utilisateur
     const user = await prisma.user.create({
       data: {
@@ -36,7 +60,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         telephone,
         motDePasse: hashedPassword,
         sexe,
-        roleId: roleId || 2 // Par défaut, rôle utilisateur
+        roleId: finalRoleId
       },
       include: {
         role: {
@@ -147,7 +171,7 @@ export const forgotPassword = async (req: Request, res: Response): Promise<void>
     // En mode développement, inclure le token pour faciliter les tests
     if (process.env.NODE_ENV === 'development' && token) {
       response.devToken = token;
-      response.resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+      response.resetUrl = `http://localhost:5173/auth/resetpwd?token=${token}`;
     }
 
     res.status(200).json(response);
@@ -211,6 +235,147 @@ export const verifyResetToken = async (req: Request, res: Response): Promise<voi
     console.error("Erreur dans verifyResetToken:", error);
     res.status(500).json({
       message: 'Erreur lors de la vérification du token',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Controller pour changer le mot de passe
+ */
+export const updatePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: 'Non authentifié' });
+      return;
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      res.status(400).json({ message: 'Mot de passe actuel et nouveau mot de passe requis' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({ message: 'Le nouveau mot de passe doit contenir au moins 6 caractères' });
+      return;
+    }
+
+    // Récupérer l'utilisateur
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      res.status(404).json({ message: 'Utilisateur introuvable' });
+      return;
+    }
+
+    // Vérifier le mot de passe actuel
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.motDePasse);
+
+    if (!isPasswordValid) {
+      res.status(400).json({ message: 'Mot de passe actuel incorrect' });
+      return;
+    }
+
+    // Hasher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mettre à jour le mot de passe
+    await prisma.user.update({
+      where: { id: userId },
+      data: { motDePasse: hashedPassword }
+    });
+
+    res.status(200).json({
+      message: 'Mot de passe modifié avec succès'
+    });
+  } catch (error: any) {
+    console.error("Erreur dans updatePassword:", error);
+    res.status(500).json({
+      message: 'Erreur lors de la modification du mot de passe',
+      details: error.message
+    });
+  }
+};
+
+/**
+ * Controller pour mettre à jour le profil utilisateur
+ */
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      res.status(401).json({ message: 'Non authentifié' });
+      return;
+    }
+
+    const { nom, prenom, email, telephone, adresse } = req.body;
+
+    // Vérifier si l'email ou le téléphone sont déjà utilisés par un autre utilisateur
+    if (email || telephone) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          AND: [
+            { id: { not: userId } },
+            {
+              OR: [
+                email ? { email } : {},
+                telephone ? { telephone } : {},
+              ].filter(obj => Object.keys(obj).length > 0)
+            }
+          ]
+        }
+      });
+
+      if (existingUser) {
+        res.status(400).json({ message: 'Email ou téléphone déjà utilisé' });
+        return;
+      }
+    }
+
+    // Mettre à jour l'utilisateur
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(nom && { nom }),
+        ...(prenom && { prenom }),
+        ...(email && { email }),
+        ...(telephone && { telephone }),
+        ...(adresse && { adresse }),
+      },
+      include: {
+        role: {
+          include: {
+            permissions: true
+          }
+        }
+      }
+    });
+
+    res.status(200).json({
+      message: 'Profil mis à jour avec succès',
+      user: {
+        id: updatedUser.id,
+        nom: updatedUser.nom,
+        prenom: updatedUser.prenom,
+        email: updatedUser.email,
+        telephone: updatedUser.telephone,
+        adresse: updatedUser.adresse,
+        sexe: updatedUser.sexe,
+        roleId: updatedUser.roleId,
+        role: updatedUser.role
+      }
+    });
+  } catch (error: any) {
+    console.error("Erreur dans updateProfile:", error);
+    res.status(500).json({
+      message: 'Erreur lors de la mise à jour du profil',
       details: error.message
     });
   }

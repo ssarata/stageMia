@@ -10,6 +10,7 @@ interface AuthState {
   isAuthenticated: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
+  updateUser: (user: User) => void;
   refreshToken: () => Promise<void>;
   checkTokenExpiry: () => boolean;
 }
@@ -35,6 +36,10 @@ export const useAuthStore = create<AuthState>()(
       login: (user, token) => {
         Cookies.set("token", token, { expires: 7 });
         set({ user, token, isAuthenticated: true });
+      },
+
+      updateUser: (user) => {
+        set({ user });
       },
 
       logout: () => {

@@ -1,12 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select2 } from "@/components/ui/select2";
 import { PhoneInputComponent } from "@/components/ui/phone-input";
 import { Controller } from "react-hook-form";
 import type { Control, FieldErrors, UseFormTrigger } from "react-hook-form";
@@ -81,65 +75,56 @@ export const FormField = ({
           <Controller
             name={field.name}
             control={control}
-            render={({ field: controllerField }) => (
-              <div className="relative">
-                <Select
-                  onValueChange={(value) => {
-                    const parsedValue = isNaN(Number(value))
-                      ? value
-                      : Number(value);
-                    controllerField.onChange(parsedValue);
-                    setTouched(true);
-                    if (trigger) {
-                      trigger(field.name);
-                    }
-                  }}
-                  // value={
-                  //   controllerField.value !== undefined
-                  //     ? controllerField.value.toString()
-                  //     : ""
-                  // }
+            render={({ field: controllerField }) => {
+              const selectedOption = field.options?.find(
+                (opt) => opt.value === controllerField.value
+              );
 
-                  value={
-                    controllerField.value !== undefined && controllerField.value !== null
-                      ? controllerField.value.toString()
-                      : ""
-                  }
-                  disabled={field.isLoading}
-                >
-                  <SelectTrigger
-                    className={`
-                      ${isValid ? "border-green-500 focus:ring-green-500 pr-10" : ""} 
-                      ${isInvalid ? "border-red-500 focus:ring-red-500" : ""}
-                    `}
-                  >
-                    <SelectValue
-                      placeholder={field.placeholder || "Sélectionner"}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {field.options?.map((option) => (
-                      <SelectItem
-                        key={option.value}
-                        value={option.value.toString()}
-                      >
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {isValid && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <Check className="h-5 w-5 text-green-500" />
-                  </div>
-                )}
-                {isInvalid && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <X className="h-5 w-5 text-red-500" />
-                  </div>
-                )}
-              </div>
-            )}
+              return (
+                <div className="relative">
+                  <Select2
+                    value={
+                      selectedOption
+                        ? { value: selectedOption.value, label: selectedOption.label }
+                        : null
+                    }
+                    onChange={(option: any) => {
+                      const value = option?.value;
+                      const parsedValue =
+                        value !== undefined && !isNaN(Number(value))
+                          ? Number(value)
+                          : value;
+                      controllerField.onChange(parsedValue);
+                      setTouched(true);
+                      if (trigger) {
+                        trigger(field.name);
+                      }
+                    }}
+                    options={field.options?.map((opt) => ({
+                      value: opt.value,
+                      label: opt.label,
+                    }))}
+                    placeholder={field.placeholder || "Sélectionner"}
+                    isDisabled={field.isLoading}
+                    isLoading={field.isLoading}
+                    isClearable
+                    isSearchable
+                    error={isInvalid}
+                    onBlur={handleBlur}
+                  />
+                  {isValid && (
+                    <div className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                      <Check className="h-5 w-5 text-green-500" />
+                    </div>
+                  )}
+                  {isInvalid && (
+                    <div className="absolute right-10 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                      <X className="h-5 w-5 text-red-500" />
+                    </div>
+                  )}
+                </div>
+              );
+            }}
           />
         );
 

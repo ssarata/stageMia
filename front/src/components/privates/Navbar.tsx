@@ -9,7 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { LogOut, Moon, Settings, Sun, User } from "lucide-react";
+import { LogOut, Moon, Sun, User } from "lucide-react";
 import { useTheme } from "../providers/theme-provider";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { useAuthStore } from "@/store/authStore";
@@ -78,14 +78,11 @@ const Navbar = () => {
 
             <DropdownMenuSeparator />
 
-            <DropdownMenuItem className="cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              <span>Profil</span>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem className="cursor-pointer">
-              <Settings className="mr-2 h-4 w-4" />
-              <span>Paramètres</span>
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link to="/dashboard/profile" className="flex items-center">
+                <User className="mr-2 h-4 w-4" />
+                <span>Mon Profil</span>
+              </Link>
             </DropdownMenuItem>
 
             <DropdownMenuSeparator />

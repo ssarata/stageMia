@@ -12,8 +12,8 @@ const getBrevoInstance = (): brevo.TransactionalEmailsApi => {
       throw new Error('BREVO_API_KEY non configurée dans les variables d\'environnement');
     }
 
-    apiInstance = new brevo.TransactionalEmailsApi();
-    apiInstance.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
+    const apiKey = apiInstance = new brevo.TransactionalEmailsApi();
+    apiKey.setApiKey(brevo.TransactionalEmailsApiApiKeys.apiKey, process.env.BREVO_API_KEY);
   }
   return apiInstance;
 };
@@ -247,7 +247,6 @@ export const sendNotificationEmail = async (
   notificationMessage: string,
   notificationType: string
 ) => {
-  // Email de notification au destinataire
   const typeColors: { [key: string]: string } = {
     info: '#2196F3',
     success: '#4CAF50',
@@ -339,49 +338,17 @@ export const sendNotificationEmail = async (
     </html>
   `;
 
-  // Vérifier si on est en mode développement via NODE_ENV
+  // En mode développement, envoyer à saratasankara598@gmail.com
   const isDevMode = process.env.NODE_ENV === 'development';
+  const finalEmail = isDevMode ? 'saratasankara598@gmail.com' : userEmail;
 
-  // Email de production centralisé
-  const productionEmail = process.env.PRODUCTION_EMAIL || 'contact.miabf@gmail.com';
+  await sendEmail({
+    to: finalEmail,
+    subject: `${emoji} Notification - MIA`,
+    html: html,
+  });
 
-  if (isDevMode) {
-    // En mode développement, envoyer à l'email de test
-    const devEmail = 'saratasankara598@gmail.com';
-
-    const htmlWithRecipientInfo = html.replace(
-      `<p>Bonjour ${userName},</p>`,
-      `<div style="background-color: #e3f2fd; padding: 10px; margin: 15px 0; border-radius: 5px;">
-        <strong>📧 Destinataire prévu:</strong> ${userName} (${userEmail})
-      </div>
-      <p>Bonjour,</p>`
-    );
-
-    await sendEmail({
-      to: devEmail,
-      subject: `${emoji} Notification pour ${userName} - MIA`,
-      html: htmlWithRecipientInfo,
-    });
-
-    console.log(`📧 [DEV] Email envoyé à ${devEmail} (destinataire prévu: ${userEmail})`);
-  } else {
-    // En mode production, envoyer à l'email centralisé MIA
-    const htmlWithUserInfo = html.replace(
-      `<p>Bonjour ${userName},</p>`,
-      `<div style="background-color: #e3f2fd; padding: 10px; margin: 15px 0; border-radius: 5px;">
-        <strong>📧 Notification pour:</strong> ${userName} (${userEmail})
-      </div>
-      <p>Bonjour,</p>`
-    );
-
-    await sendEmail({
-      to: productionEmail,
-      subject: `${emoji} Notification pour ${userName} - MIA`,
-      html: htmlWithUserInfo,
-    });
-
-    console.log(`📧 [PROD] Email envoyé à ${productionEmail} (pour ${userEmail})`);
-  }
+  console.log(`📧 Email de notification envoyé à ${finalEmail}${isDevMode ? ` (destinataire prévu: ${userEmail})` : ''}`);
 };
 
 export default {

@@ -43,7 +43,6 @@ export const usePermissions = () => {
   // Raccourcis pour les rôles communs
   const isAdmin = useMemo(() => hasRole("ADMIN"), [user]);
   const isMIA = useMemo(() => hasRole("MIA"), [user]);
-  const isLecteur = useMemo(() => hasRole("LECTEUR"), [user]);
   const isAdminOrMIA = useMemo(() => isAdmin || isMIA, [isAdmin, isMIA]);
 
   // Vérifier les permissions CRUD pour une ressource
@@ -58,7 +57,6 @@ export const usePermissions = () => {
     hasAnyRole,
     isAdmin,
     isMIA,
-    isLecteur,
     isAdminOrMIA,
 
     // Fonctions de vérification de permissions

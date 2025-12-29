@@ -2,8 +2,7 @@ import { Router } from 'express';
 import {
   shareContact,
   getSharedContacts,
-  generateShareLink,
-  importSharedContact
+  generateShareLink
 } from '../controllers/shareController.js';
 import authenticateToken from '../middlewares/auth.js';
 import { ensurePermission } from '../middlewares/ensurePermission.js';
@@ -14,8 +13,8 @@ const router = Router();
  * @swagger
  * /api/share/contact:
  *   post:
- *     summary: Partager un contact avec un autre utilisateur
- *     description: Partage un contact via le système interne ou par email
+ *     summary: Partager un contact par email ou réseaux sociaux
+ *     description: Partage un contact via email ou génère un lien pour les réseaux sociaux
  *     tags: [Share]
  *     security:
  *       - bearerAuth: []
@@ -27,24 +26,21 @@ const router = Router();
  *             type: object
  *             required:
  *               - contactId
+ *               - recipientEmail
  *             properties:
  *               contactId:
  *                 type: integer
  *                 description: ID du contact à partager
  *                 example: 5
- *               recipientId:
- *                 type: integer
- *                 description: ID de l'utilisateur destinataire (pour partage interne)
- *                 example: 3
  *               recipientEmail:
  *                 type: string
  *                 format: email
- *                 description: Email du destinataire (pour partage par email)
+ *                 description: Email du destinataire
  *                 example: destinataire@example.com
  *               platform:
  *                 type: string
- *                 enum: [internal, email]
- *                 description: Plateforme de partage (internal ou email)
+ *                 enum: [email, whatsapp, telegram, facebook, linkedin, instagram]
+ *                 description: Plateforme de partage
  *                 example: email
  *     responses:
  *       201:
@@ -57,10 +53,16 @@ const router = Router();
  *                 message:
  *                   type: string
  *                   example: Contact partagé avec succès
+ *                 recipientEmail:
+ *                   type: string
+ *                   example: destinataire@example.com
+ *                 platform:
+ *                   type: string
+ *                   example: email
  *       400:
  *         description: Données invalides
  *       404:
- *         description: Contact ou utilisateur introuvable
+ *         description: Contact introuvable
  *       401:
  *         description: Non authentifié
  *       403:
@@ -72,16 +74,16 @@ router.post('/contact', authenticateToken, ensurePermission('SharedContact.creat
 
 /**
  * @swagger
- * /api/share/received:
+ * /api/share/history:
  *   get:
- *     summary: Obtenir tous les contacts partagés avec l'utilisateur
- *     description: Retourne la liste des contacts que d'autres utilisateurs ont partagés avec vous
+ *     summary: Obtenir l'historique des partages de l'utilisateur
+ *     description: Retourne la liste des contacts que vous avez partagés
  *     tags: [Share]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Liste des contacts partagés
+ *         description: Historique des partages
  *         content:
  *           application/json:
  *             schema:
@@ -93,8 +95,8 @@ router.post('/contact', authenticateToken, ensurePermission('SharedContact.creat
  *                     type: integer
  *                   contact:
  *                     $ref: '#/components/schemas/Contact'
- *                   sharedBy:
- *                     $ref: '#/components/schemas/User'
+ *                   platform:
+ *                     type: string
  *                   sharedAt:
  *                     type: string
  *                     format: date-time
@@ -103,7 +105,7 @@ router.post('/contact', authenticateToken, ensurePermission('SharedContact.creat
  *       403:
  *         description: Permission insuffisante
  */
-router.get('/received', authenticateToken, ensurePermission('SharedContact.read'), getSharedContacts);
+router.get('/history', authenticateToken, ensurePermission('SharedContact.read'), getSharedContacts);
 
 /**
  * @swagger
@@ -157,49 +159,5 @@ router.get('/received', authenticateToken, ensurePermission('SharedContact.read'
  *         description: Permission insuffisante
  */
 router.post('/generate-link', authenticateToken, ensurePermission('SharedContact.create'), generateShareLink);
-
-/**
- * @swagger
- * /api/share/import:
- *   post:
- *     summary: Importer un contact partagé dans ses propres contacts
- *     description: Crée une copie d'un contact partagé dans votre liste de contacts personnelle
- *     tags: [Share]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - sharedContactId
- *             properties:
- *               sharedContactId:
- *                 type: integer
- *                 description: ID du contact partagé à importer
- *                 example: 12
- *               categorieId:
- *                 type: integer
- *                 description: ID de la catégorie pour ce contact (optionnel)
- *                 example: 1
- *     responses:
- *       201:
- *         description: Contact importé avec succès
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Contact'
- *       404:
- *         description: Contact partagé introuvable
- *       400:
- *         description: Données invalides
- *       401:
- *         description: Non authentifié
- *       403:
- *         description: Permission insuffisante
- */
-router.post('/import', authenticateToken, ensurePermission('SharedContact.create'), importSharedContact);
 
 export default router;

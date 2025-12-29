@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
-import { sendNotificationEmail } from '../services/emailService.js';
+import { sendNotificationEmail } from '../services/nodemailerService.js';
 
 // Obtenir tous les contacts de l'utilisateur connecté
 export const getAllContacts = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -109,7 +109,7 @@ export const createContact = async (req: AuthRequest, res: Response): Promise<vo
       }
     });
 
-    const notificationMessage = `${req.user.email} a créé un nouveau contact: ${nom} ${prenom} (${telephone})`;
+    const notificationMessage = `${req.user.nom} ${req.user.prenom} (${req.user.email}) a créé un nouveau contact: ${nom} ${prenom} (${telephone})`;
 
     // Notifier les administrateurs
     await notifyAdmins(notificationMessage, 'info');
@@ -192,7 +192,7 @@ export const updateContact = async (req: AuthRequest, res: Response): Promise<vo
       }
     });
 
-    const notificationMessage = `${req.user.email} a modifié le contact: ${contact.nom} ${contact.prenom}`;
+    const notificationMessage = `${req.user.nom} ${req.user.prenom} (${req.user.email}) a modifié le contact: ${contact.nom} ${contact.prenom}`;
 
     // Notifier les administrateurs
     await notifyAdmins(notificationMessage, 'info');

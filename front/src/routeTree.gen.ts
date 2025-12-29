@@ -22,6 +22,7 @@ import { Route as PublicAuthLoginRouteImport } from './routes/_public/auth/login
 import { Route as PublicAuthForgotpwdRouteImport } from './routes/_public/auth/forgotpwd'
 import { Route as AuthenticatedDashboardUsersIndexRouteImport } from './routes/_authenticated/dashboard/users/index'
 import { Route as AuthenticatedDashboardRoleIndexRouteImport } from './routes/_authenticated/dashboard/role/index'
+import { Route as AuthenticatedDashboardProfileIndexRouteImport } from './routes/_authenticated/dashboard/profile/index'
 import { Route as AuthenticatedDashboardPermissionIndexRouteImport } from './routes/_authenticated/dashboard/permission/index'
 import { Route as AuthenticatedDashboardNotificationsIndexRouteImport } from './routes/_authenticated/dashboard/notifications/index'
 import { Route as AuthenticatedDashboardContactIndexRouteImport } from './routes/_authenticated/dashboard/contact/index'
@@ -93,6 +94,12 @@ const AuthenticatedDashboardRoleIndexRoute =
     path: '/role/',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardProfileIndexRoute =
+  AuthenticatedDashboardProfileIndexRouteImport.update({
+    id: '/profile/',
+    path: '/profile/',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedDashboardPermissionIndexRoute =
   AuthenticatedDashboardPermissionIndexRouteImport.update({
     id: '/permission/',
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/contact': typeof AuthenticatedDashboardContactIndexRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsIndexRoute
   '/dashboard/permission': typeof AuthenticatedDashboardPermissionIndexRoute
+  '/dashboard/profile': typeof AuthenticatedDashboardProfileIndexRoute
   '/dashboard/role': typeof AuthenticatedDashboardRoleIndexRoute
   '/dashboard/users': typeof AuthenticatedDashboardUsersIndexRoute
 }
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/dashboard/contact': typeof AuthenticatedDashboardContactIndexRoute
   '/dashboard/notifications': typeof AuthenticatedDashboardNotificationsIndexRoute
   '/dashboard/permission': typeof AuthenticatedDashboardPermissionIndexRoute
+  '/dashboard/profile': typeof AuthenticatedDashboardProfileIndexRoute
   '/dashboard/role': typeof AuthenticatedDashboardRoleIndexRoute
   '/dashboard/users': typeof AuthenticatedDashboardUsersIndexRoute
 }
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard/contact/': typeof AuthenticatedDashboardContactIndexRoute
   '/_authenticated/dashboard/notifications/': typeof AuthenticatedDashboardNotificationsIndexRoute
   '/_authenticated/dashboard/permission/': typeof AuthenticatedDashboardPermissionIndexRoute
+  '/_authenticated/dashboard/profile/': typeof AuthenticatedDashboardProfileIndexRoute
   '/_authenticated/dashboard/role/': typeof AuthenticatedDashboardRoleIndexRoute
   '/_authenticated/dashboard/users/': typeof AuthenticatedDashboardUsersIndexRoute
 }
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/dashboard/contact'
     | '/dashboard/notifications'
     | '/dashboard/permission'
+    | '/dashboard/profile'
     | '/dashboard/role'
     | '/dashboard/users'
   fileRoutesByTo: FileRoutesByTo
@@ -203,6 +214,7 @@ export interface FileRouteTypes {
     | '/dashboard/contact'
     | '/dashboard/notifications'
     | '/dashboard/permission'
+    | '/dashboard/profile'
     | '/dashboard/role'
     | '/dashboard/users'
   id:
@@ -222,6 +234,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard/contact/'
     | '/_authenticated/dashboard/notifications/'
     | '/_authenticated/dashboard/permission/'
+    | '/_authenticated/dashboard/profile/'
     | '/_authenticated/dashboard/role/'
     | '/_authenticated/dashboard/users/'
   fileRoutesById: FileRoutesById
@@ -324,6 +337,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRoleIndexRouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/profile/': {
+      id: '/_authenticated/dashboard/profile/'
+      path: '/profile'
+      fullPath: '/dashboard/profile'
+      preLoaderRoute: typeof AuthenticatedDashboardProfileIndexRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/dashboard/permission/': {
       id: '/_authenticated/dashboard/permission/'
       path: '/permission'
@@ -361,6 +381,7 @@ interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardContactIndexRoute: typeof AuthenticatedDashboardContactIndexRoute
   AuthenticatedDashboardNotificationsIndexRoute: typeof AuthenticatedDashboardNotificationsIndexRoute
   AuthenticatedDashboardPermissionIndexRoute: typeof AuthenticatedDashboardPermissionIndexRoute
+  AuthenticatedDashboardProfileIndexRoute: typeof AuthenticatedDashboardProfileIndexRoute
   AuthenticatedDashboardRoleIndexRoute: typeof AuthenticatedDashboardRoleIndexRoute
   AuthenticatedDashboardUsersIndexRoute: typeof AuthenticatedDashboardUsersIndexRoute
 }
@@ -376,6 +397,8 @@ const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
       AuthenticatedDashboardNotificationsIndexRoute,
     AuthenticatedDashboardPermissionIndexRoute:
       AuthenticatedDashboardPermissionIndexRoute,
+    AuthenticatedDashboardProfileIndexRoute:
+      AuthenticatedDashboardProfileIndexRoute,
     AuthenticatedDashboardRoleIndexRoute: AuthenticatedDashboardRoleIndexRoute,
     AuthenticatedDashboardUsersIndexRoute:
       AuthenticatedDashboardUsersIndexRoute,

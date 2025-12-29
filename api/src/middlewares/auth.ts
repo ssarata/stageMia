@@ -9,6 +9,8 @@ export interface AuthRequest extends Request {
     email: string;
     roleId: number;
     roleName?: string;
+    nom: string;
+    prenom: string;
   };
 }
 
@@ -44,7 +46,9 @@ const authenticateToken = async (req: AuthRequest, res: Response, next: NextFunc
       id: userFromDb.id,
       email: userFromDb.email,
       roleId: userFromDb.roleId,
-      roleName: userFromDb.role?.nomRole
+      roleName: userFromDb.role?.nomRole,
+      nom: userFromDb.nom,
+      prenom: userFromDb.prenom
     };
 
     next();

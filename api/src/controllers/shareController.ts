@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
-import { sendContactByEmail, isEmailConfigured } from '../utils/emailService.js';
+import { sendContactByEmail, isEmailConfigured } from '../utils/nodemailerService.js';
+import { sendNotificationEmail } from '../services/nodemailerService.js';
 
 // Partager un contact avec un autre utilisateur
 export const shareContact = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -30,103 +31,85 @@ export const shareContact = async (req: AuthRequest, res: Response): Promise<voi
       return;
     }
 
-    // Si un email est fourni, partager par email
-    if (recipientEmail && platform === 'email') {
-      if (!isEmailConfigured()) {
-        res.status(500).json({ error: 'Service email non configuré' });
-        return;
-      }
-
-      const senderName = `${req.user.email}`;
-
-      await sendContactByEmail(recipientEmail, contact, senderName);
-
-      // Enregistrer le partage par email
-      await prisma.sharedContact.create({
-        data: {
-          contactId,
-          userId: req.user.id,
-          recipientId: req.user.id, // Pour l'email, on met l'ID de l'expéditeur
-          platform: 'email'
-        }
-      });
-
-      // Notifier les administrateurs
-      await notifyAdmins(
-        `${req.user.email} a partagé le contact "${contact.nom} ${contact.prenom}" par email à ${recipientEmail}`,
-        'info'
-      );
-
-      res.status(201).json({
-        message: 'Contact partagé par email avec succès',
-        recipientEmail
-      });
+    // Partage par email uniquement
+    if (!recipientEmail) {
+      res.status(400).json({ error: 'recipientEmail requis pour le partage' });
       return;
     }
 
-    // Partage interne (utilisateur de l'application)
-    if (!recipientId) {
-      res.status(400).json({ error: 'recipientId requis pour le partage interne' });
+    if (!isEmailConfigured()) {
+      res.status(500).json({ error: 'Service email non configuré' });
       return;
     }
 
-    // Créer l'enregistrement de partage
-    const share = await prisma.sharedContact.create({
+    const senderName = `${req.user.nom} ${req.user.prenom}`;
+
+    // Envoyer le contact par email
+    await sendContactByEmail(recipientEmail, contact, senderName);
+
+    // Enregistrer le partage
+    await prisma.sharedContact.create({
       data: {
         contactId,
         userId: req.user.id,
-        recipientId,
-        platform: platform || 'internal'
-      },
-      include: {
-        contact: true,
-        user: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            email: true
-          }
-        },
-        recipient: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            email: true
-          }
-        }
+        recipientId: req.user.id,
+        platform: platform || 'email'
       }
     });
 
-    // Créer une notification pour le destinataire
-    await prisma.notification.create({
-      data: {
-        message: `${req.user.email} a partagé un contact avec vous: ${contact.nom} ${contact.prenom}`,
-        userId: recipientId,
-        type: 'info'
-      }
-    });
+    // Notifier l'utilisateur qui a partagé
+    const userMessage = `Vous avez partagé le contact "${contact.nom} ${contact.prenom}" par email à ${recipientEmail}`;
+    try {
+      await sendNotificationEmail(
+        req.user.email,
+        `${req.user.nom} ${req.user.prenom}`,
+        userMessage,
+        'success'
+      );
+    } catch (error) {
+      console.error(`Erreur lors de l'envoi d'email à ${req.user.email}:`, error);
+    }
 
     // Notifier les administrateurs
-    const recipient = await prisma.user.findUnique({
-      where: { id: recipientId },
-      select: { email: true }
+    const adminMessage = `${req.user.nom} ${req.user.prenom} (${req.user.email}) a partagé le contact "${contact.nom} ${contact.prenom}" par ${platform || 'email'} à ${recipientEmail}`;
+    await notifyAdmins(adminMessage, 'info');
+
+    // Envoyer des emails aux administrateurs
+    const adminRole = await prisma.role.findFirst({
+      where: { nomRole: 'ADMIN' }
     });
 
-    await notifyAdmins(
-      `${req.user.email} a partagé le contact "${contact.nom} ${contact.prenom}" avec ${recipient?.email || 'un utilisateur'}`,
-      'info'
-    );
+    if (adminRole) {
+      const admins = await prisma.user.findMany({
+        where: { roleId: adminRole.id }
+      });
 
-    res.status(201).json(share);
+      for (const admin of admins) {
+        try {
+          await sendNotificationEmail(
+            admin.email,
+            `${admin.nom} ${admin.prenom}`,
+            adminMessage,
+            'info'
+          );
+        } catch (error) {
+          console.error(`Erreur lors de l'envoi d'email à ${admin.email}:`, error);
+        }
+      }
+    }
+
+    res.status(201).json({
+      message: 'Contact partagé avec succès',
+      recipientEmail,
+      platform: platform || 'email'
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors du partage du contact' });
   }
 };
 
-// Obtenir tous les contacts partagés avec l'utilisateur
+// Obtenir l'historique des partages de l'utilisateur
 export const getSharedContacts = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     if (!req.user) {
@@ -135,19 +118,11 @@ export const getSharedContacts = async (req: AuthRequest, res: Response): Promis
     }
 
     const sharedContacts = await prisma.sharedContact.findMany({
-      where: { recipientId: req.user.id },
+      where: { userId: req.user.id },
       include: {
         contact: {
           include: {
             categorie: true
-          }
-        },
-        user: {
-          select: {
-            id: true,
-            nom: true,
-            prenom: true,
-            email: true
           }
         }
       },
@@ -159,7 +134,7 @@ export const getSharedContacts = async (req: AuthRequest, res: Response): Promis
     res.json(sharedContacts);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des contacts partagés' });
+    res.status(500).json({ error: 'Erreur lors de la récupération de l\'historique des partages' });
   }
 };
 
@@ -226,54 +201,3 @@ ${contact.fonction ? `Fonction: ${contact.fonction}` : ''}
   }
 };
 
-// Importer un contact partagé dans ses propres contacts
-export const importSharedContact = async (req: AuthRequest, res: Response): Promise<void> => {
-  try {
-    if (!req.user) {
-      res.status(401).json({ error: 'Non authentifié' });
-      return;
-    }
-
-    const { sharedContactId } = req.body;
-
-    // Récupérer le contact partagé
-    const sharedContact = await prisma.sharedContact.findFirst({
-      where: {
-        id: sharedContactId,
-        recipientId: req.user.id
-      },
-      include: {
-        contact: true
-      }
-    });
-
-    if (!sharedContact) {
-      res.status(404).json({ error: 'Contact partagé introuvable' });
-      return;
-    }
-
-    // Créer une copie du contact pour l'utilisateur
-    const newContact = await prisma.contact.create({
-      data: {
-        nom: sharedContact.contact.nom,
-        prenom: sharedContact.contact.prenom,
-        telephone: sharedContact.contact.telephone,
-        email: sharedContact.contact.email,
-        adresse: sharedContact.contact.adresse,
-        fonction: sharedContact.contact.fonction,
-        organisation: sharedContact.contact.organisation,
-        notes: `Contact partagé par un autre utilisateur`,
-        userId: req.user.id,
-        categorieId: sharedContact.contact.categorieId
-      },
-      include: {
-        categorie: true
-      }
-    });
-
-    res.status(201).json(newContact);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erreur lors de l\'importation du contact' });
-  }
-};

@@ -9,7 +9,8 @@ import { CATEGORIE_COLUMN_LABELS, CATEGORIE_INITIAL_VISIBLE_COLUMNS } from "@/co
 import ConfirmModal from "@/components/Global/Modal/ConfirModal";
 import AddCategorie from "./AddCategorie";
 import EditCategorie from "./EditCategorie";
-import { Plus, FolderOpen } from "lucide-react";
+import ShowCategorieContacts from "./ShowCategorieContacts";
+import { Plus, FolderOpen, Eye } from "lucide-react";
 import type { ColDef } from "ag-grid-community";
 import { ProtectedAction } from "@/components/Global/ProtectedAction";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -29,6 +30,8 @@ const ListeCategories = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategorie, setSelectedCategorie] = useState<CategorieAffiche | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isShowContactsOpen, setIsShowContactsOpen] = useState(false);
+  const [selectedCategorieForShow, setSelectedCategorieForShow] = useState<CategorieAffiche | null>(null);
 
   const { data: categories, isLoading, error } = useGetCategories();
   const { mutate: deleteCategorie } = useDeleteCategorie();
@@ -52,6 +55,11 @@ const ListeCategories = () => {
   const handleEdit = (categorie: CategorieAffiche) => {
     setSelectedCategorie(categorie);
     setIsEditModalOpen(true);
+  };
+
+  const handleShowContacts = (categorie: CategorieAffiche) => {
+    setSelectedCategorieForShow(categorie);
+    setIsShowContactsOpen(true);
   };
 
   const getColumnDefinitions = useCallback(
@@ -87,6 +95,14 @@ const ListeCategories = () => {
           cellRenderer: createActionCellRenderer<CategorieAffiche>({
             onEdit: hasPermission('categorie.update') ? (data) => handleEdit(data) : undefined,
             onDelete: hasPermission('categorie.delete') ? (data) => openConfirmModal(data.id) : undefined,
+            customActions: [
+              {
+                label: "Voir contacts",
+                icon: <Eye className="mr-2 h-4 w-4" />,
+                onClick: (data) => handleShowContacts(data),
+                className: "text-blue-600",
+              },
+            ],
           }),
           sortable: false,
           filter: false,
@@ -171,6 +187,15 @@ const ListeCategories = () => {
         onConfirm={confirmDelete}
         onCancel={closeConfirmModal}
       />
+
+      {selectedCategorieForShow && (
+        <ShowCategorieContacts
+          open={isShowContactsOpen}
+          onOpenChange={setIsShowContactsOpen}
+          categorieId={selectedCategorieForShow.id}
+          categorieName={selectedCategorieForShow.nomCategorie}
+        />
+      )}
     </>
   );
 };
