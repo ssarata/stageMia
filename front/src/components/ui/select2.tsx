@@ -1,4 +1,4 @@
-import Select, { Props as SelectProps, StylesConfig } from "react-select";
+import Select, { type Props as SelectProps, type StylesConfig } from "react-select";
 import { useTheme } from "@/components/providers/theme-provider";
 
 interface Select2Props extends Omit<SelectProps, "styles"> {

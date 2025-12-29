@@ -86,6 +86,10 @@ export const contactFormSchema = z.object({
     (val) => (val === "" || val === null || val === undefined ? undefined : val),
     z.string().optional()
   ),
+  notes: z.preprocess(
+    (val) => (val === "" || val === null || val === undefined ? undefined : val),
+    z.string().optional()
+  ),
   categorieId: z.coerce.number().int().positive("Veuillez sélectionner une catégorie"),
 });
 export type ContactFormSchema = z.infer<typeof contactFormSchema>;
