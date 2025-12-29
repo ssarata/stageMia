@@ -47,21 +47,23 @@ export const createNotification = async (req: Request, res: Response): Promise<v
       }
     });
 
-    // Envoyer l'email de notification
-    try {
-      await sendNotificationEmail(
-        notification.user.email,
-        `${notification.user.prenom} ${notification.user.nom}`,
-        notification.message,
-        notification.type
-      );
-      console.log(`✅ Email de notification envoyé à ${notification.user.email}`);
-    } catch (emailError) {
-      console.error('⚠️ Erreur lors de l\'envoi de l\'email de notification:', emailError);
-      // Ne pas bloquer la création de la notification si l'email échoue
-    }
-
+    // Réponse immédiate au client
     res.status(201).json(notification);
+
+    // Envoyer l'email de notification de manière asynchrone
+    setImmediate(async () => {
+      try {
+        await sendNotificationEmail(
+          notification.user.email,
+          `${notification.user.prenom} ${notification.user.nom}`,
+          notification.message,
+          notification.type
+        );
+        console.log(`✅ Email de notification envoyé à ${notification.user.email}`);
+      } catch (emailError) {
+        console.error('⚠️ Erreur lors de l\'envoi de l\'email de notification:', emailError);
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Erreur lors de la création de la notification' });

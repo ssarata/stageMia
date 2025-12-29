@@ -38,24 +38,22 @@ export const forgotPassword = async (email: string): Promise<string | void> => {
     },
   });
 
-  // Envoyer l'email avec le token NON hashé
-  try {
-    await emailService.sendPasswordResetEmail(
-      user.email,
-      resetToken,
-      `${user.prenom} ${user.nom}`
-    );
-  } catch (error: any) {
-    // Si l'envoi de l'email échoue, supprimer le token de la base de données
-    await prisma.user.update({
-      where: { id: user.id },
-      data: {
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
-      },
-    });
-    throw new Error(`Erreur lors de l'envoi de l'email: ${error.message}`);
-  }
+  // Envoyer l'email de manière asynchrone pour ne pas bloquer la réponse
+  // En cas d'échec, le token reste valide et l'utilisateur peut réessayer
+  setImmediate(async () => {
+    try {
+      await emailService.sendPasswordResetEmail(
+        user.email,
+        resetToken,
+        `${user.prenom} ${user.nom}`
+      );
+      console.log(`✅ Email de réinitialisation envoyé à ${user.email}`);
+    } catch (error: any) {
+      console.error(`❌ Erreur lors de l'envoi de l'email de réinitialisation à ${user.email}:`, error);
+      // Ne pas supprimer le token si l'email échoue - l'utilisateur peut réessayer
+      // ou utiliser le token si fourni en mode dev
+    }
+  });
 
   // En mode développement, retourner le token pour faciliter les tests
   if (process.env.NODE_ENV === 'development') {
@@ -100,16 +98,18 @@ export const resetPassword = async (token: string, newPassword: string): Promise
     },
   });
 
-  // Envoyer un email de confirmation
-  try {
-    await emailService.sendPasswordResetConfirmationEmail(
-      user.email,
-      `${user.prenom} ${user.nom}`
-    );
-  } catch (error) {
-    console.error('Erreur lors de l\'envoi de l\'email de confirmation:', error);
-    // Ne pas échouer la réinitialisation si l'email de confirmation échoue
-  }
+  // Envoyer un email de confirmation de manière asynchrone
+  setImmediate(async () => {
+    try {
+      await emailService.sendPasswordResetConfirmationEmail(
+        user.email,
+        `${user.prenom} ${user.nom}`
+      );
+      console.log(`✅ Email de confirmation de réinitialisation envoyé à ${user.email}`);
+    } catch (error) {
+      console.error(`❌ Erreur lors de l'envoi de l'email de confirmation à ${user.email}:`, error);
+    }
+  });
 };
 
 // Vérifier la validité d'un token de réinitialisation

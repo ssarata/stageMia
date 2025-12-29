@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Upload, Download, FileSpreadsheet, AlertCircle, AlertTriangle } from "lucide-react";
+import { Upload, FileSpreadsheet, AlertCircle, AlertTriangle } from "lucide-react";
 import { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
@@ -47,36 +47,56 @@ const ImportContacts = ({ open, onOpenChange }: ImportContactsProps) => {
   };
 
   const handleUpload = async () => {
+    console.log('🚀 Starting import process...');
     setError("");
     setSuccess("");
     setWarnings([]);
 
     if (!file) {
+      console.log('❌ No file selected');
       setError("Veuillez sélectionner un fichier Excel");
       return;
     }
 
+    console.log('📁 File selected:', file.name, 'Size:', file.size);
     setUploading(true);
+    console.log('⏳ Upload status set to true');
 
     try {
       const formData = new FormData();
       formData.append('file', file);
 
       const token = Cookies.get('token');
+      const apiUrl = `${import.meta.env.VITE_API_URL}/contacts/import`;
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/contacts/import`, formData, {
+      console.log('📡 Making request to:', apiUrl);
+      console.log('🔑 Token present:', !!token);
+
+      const response = await axios.post(apiUrl, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
+        },
+        timeout: 120000, // 2 minutes timeout
+        onUploadProgress: (progressEvent) => {
+          // Optionnel: afficher la progression
+          console.log('Upload progress:', progressEvent);
         }
       });
 
+      console.log('✅ Import response received:', response.data);
+      console.log('Success count:', response.data.successCount);
+      console.log('Error count:', response.data.errorCount);
+
       // Afficher les avertissements s'il y en a
       if (response.data.warnings && response.data.warnings.length > 0) {
+        console.log('Warnings:', response.data.warnings);
         setWarnings(response.data.warnings);
       }
 
-      setSuccess(`${response.data.successCount} contact(s) importé(s) avec succès${response.data.errorCount > 0 ? `, ${response.data.errorCount} erreur(s)` : ''}`);
+      const successMessage = `${response.data.successCount} contact(s) importé(s) avec succès${response.data.errorCount > 0 ? `, ${response.data.errorCount} erreur(s)` : ''}`;
+      console.log('Setting success message:', successMessage);
+      setSuccess(successMessage);
       setFile(null);
 
       // Rafraîchir la liste des contacts après un délai
@@ -86,43 +106,32 @@ const ImportContacts = ({ open, onOpenChange }: ImportContactsProps) => {
       }, 3000);
 
     } catch (error: any) {
-      console.error('Erreur lors de l\'upload:', error);
-      setError(error.response?.data?.error || "Une erreur est survenue lors de l'import");
+      console.error('❌ Erreur lors de l\'upload:', error);
+      console.error('Error code:', error.code);
+      console.error('Error response:', error.response);
+      console.error('Error request:', error.request);
+
+      if (error.code === 'ECONNABORTED') {
+        console.log('Timeout détecté');
+        setError("La requête a expiré. Le fichier est peut-être trop volumineux.");
+      } else if (error.response) {
+        // Le serveur a répondu avec un code d'erreur
+        console.log('Erreur serveur:', error.response.status);
+        setError(error.response?.data?.error || error.response?.data?.message || "Une erreur est survenue lors de l'import");
+      } else if (error.request) {
+        // La requête a été envoyée mais pas de réponse
+        console.log('Pas de réponse du serveur');
+        setError("Aucune réponse du serveur. Vérifiez votre connexion.");
+      } else {
+        console.log('Erreur inconnue');
+        setError("Une erreur est survenue lors de l'import");
+      }
     } finally {
+      console.log('🔄 Finally block - Setting uploading to false');
       setUploading(false);
     }
   };
 
-  const handleDownloadTemplate = async () => {
-    try {
-      const token = Cookies.get('token');
-
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/contacts/import/template`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          },
-          responseType: 'blob'
-        }
-      );
-
-      // Créer un lien de téléchargement
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
-      link.href = url;
-      link.setAttribute('download', 'template_contacts.xlsx');
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-
-      setSuccess("Le fichier template a été téléchargé avec succès");
-
-    } catch (error) {
-      console.error('Erreur lors du téléchargement du template:', error);
-      setError("Impossible de télécharger le template");
-    }
-  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

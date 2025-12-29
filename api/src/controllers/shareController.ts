@@ -44,9 +44,6 @@ export const shareContact = async (req: AuthRequest, res: Response): Promise<voi
 
     const senderName = `${req.user.nom} ${req.user.prenom}`;
 
-    // Envoyer le contact par email
-    await sendContactByEmail(recipientEmail, contact, senderName);
-
     // Enregistrer le partage
     await prisma.sharedContact.create({
       data: {
@@ -57,51 +54,72 @@ export const shareContact = async (req: AuthRequest, res: Response): Promise<voi
       }
     });
 
-    // Notifier l'utilisateur qui a partagé
-    const userMessage = `Vous avez partagé le contact "${contact.nom} ${contact.prenom}" par email à ${recipientEmail}`;
-    try {
-      await sendNotificationEmail(
-        req.user.email,
-        `${req.user.nom} ${req.user.prenom}`,
-        userMessage,
-        'success'
-      );
-    } catch (error) {
-      console.error(`Erreur lors de l'envoi d'email à ${req.user.email}:`, error);
-    }
-
-    // Notifier les administrateurs
-    const adminMessage = `${req.user.nom} ${req.user.prenom} (${req.user.email}) a partagé le contact "${contact.nom} ${contact.prenom}" par ${platform || 'email'} à ${recipientEmail}`;
-    await notifyAdmins(adminMessage, 'info');
-
-    // Envoyer des emails aux administrateurs
-    const adminRole = await prisma.role.findFirst({
-      where: { nomRole: 'ADMIN' }
-    });
-
-    if (adminRole) {
-      const admins = await prisma.user.findMany({
-        where: { roleId: adminRole.id }
-      });
-
-      for (const admin of admins) {
-        try {
-          await sendNotificationEmail(
-            admin.email,
-            `${admin.nom} ${admin.prenom}`,
-            adminMessage,
-            'info'
-          );
-        } catch (error) {
-          console.error(`Erreur lors de l'envoi d'email à ${admin.email}:`, error);
-        }
-      }
-    }
-
+    // Réponse immédiate au client AVANT d'envoyer les emails
     res.status(201).json({
       message: 'Contact partagé avec succès',
       recipientEmail,
       platform: platform || 'email'
+    });
+
+    // Envoyer tous les emails de manière asynchrone APRÈS avoir répondu au client
+    // Cela évite que les timeouts SMTP bloquent la réponse HTTP
+    setImmediate(async () => {
+      try {
+        console.log('📧 Envoi des emails de partage...');
+
+        // Envoyer le contact par email au destinataire
+        try {
+          await sendContactByEmail(recipientEmail, contact, senderName);
+          console.log(`✅ Contact envoyé par email à ${recipientEmail}`);
+        } catch (error) {
+          console.error(`❌ Erreur lors de l'envoi du contact à ${recipientEmail}:`, error);
+        }
+
+        // Notifier l'utilisateur qui a partagé
+        const userMessage = `Vous avez partagé le contact "${contact.nom} ${contact.prenom}" par email à ${recipientEmail}`;
+        try {
+          await sendNotificationEmail(
+            req.user!.email,
+            `${req.user!.nom} ${req.user!.prenom}`,
+            userMessage,
+            'success'
+          );
+        } catch (error) {
+          console.error(`Erreur lors de l'envoi d'email à ${req.user!.email}:`, error);
+        }
+
+        // Notifier les administrateurs
+        const adminMessage = `${req.user!.nom} ${req.user!.prenom} (${req.user!.email}) a partagé le contact "${contact.nom} ${contact.prenom}" par ${platform || 'email'} à ${recipientEmail}`;
+        await notifyAdmins(adminMessage, 'info');
+
+        // Envoyer des emails aux administrateurs
+        const adminRole = await prisma.role.findFirst({
+          where: { nomRole: 'ADMIN' }
+        });
+
+        if (adminRole) {
+          const admins = await prisma.user.findMany({
+            where: { roleId: adminRole.id }
+          });
+
+          for (const admin of admins) {
+            try {
+              await sendNotificationEmail(
+                admin.email,
+                `${admin.nom} ${admin.prenom}`,
+                adminMessage,
+                'info'
+              );
+            } catch (error) {
+              console.error(`Erreur lors de l'envoi d'email à ${admin.email}:`, error);
+            }
+          }
+        }
+
+        console.log('✅ Emails de partage envoyés');
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'envoi des notifications de partage:', error);
+      }
     });
   } catch (error) {
     console.error(error);

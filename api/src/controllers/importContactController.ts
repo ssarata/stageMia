@@ -151,7 +151,7 @@ export const importContacts = async (req: AuthRequest, res: Response): Promise<v
 
     console.log(`✅ Import terminé: ${successCount} succès, ${errorCount} erreurs`);
 
-    // Réponse à l'utilisateur
+    // Réponse à l'utilisateur AVANT d'envoyer les emails
     res.status(200).json({
       message: successCount > 0
         ? `Import réussi: ${successCount} contact(s) importé(s)${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`
@@ -162,6 +162,63 @@ export const importContacts = async (req: AuthRequest, res: Response): Promise<v
       errors: errorCount > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,
       status: successCount > 0 ? 'success' : 'error'
+    });
+
+    // Envoyer les emails de manière asynchrone APRÈS avoir répondu au client
+    // Cela évite que les timeouts SMTP bloquent la réponse HTTP
+    setImmediate(async () => {
+      try {
+        console.log('📧 Envoi des emails de notification...');
+
+        // Envoyer un email à l'utilisateur qui a importé
+        const userMessage = successCount > 0
+          ? `Vous avez importé ${successCount} contact(s) avec succès${errorCount > 0 ? `. ${errorCount} erreur(s) ont été rencontrées.` : '.'}`
+          : `L'importation a échoué avec ${errorCount} erreur(s).`;
+
+        try {
+          await sendNotificationEmail(
+            req.user!.email,
+            `${req.user!.nom} ${req.user!.prenom}`,
+            userMessage,
+            successCount > 0 ? 'success' : 'error'
+          );
+        } catch (error) {
+          console.error(`Erreur lors de l'envoi d'email à ${req.user!.email}:`, error);
+        }
+
+        // Notifier les administrateurs
+        const notificationMessage = `${req.user!.nom} ${req.user!.prenom} (${req.user!.email}) a importé ${successCount} contact(s) via fichier Excel (${errorCount} erreur(s))`;
+
+        await notifyAdmins(notificationMessage, successCount > 0 ? 'success' : 'warning');
+
+        // Envoyer des emails aux administrateurs
+        const adminRole = await prisma.role.findFirst({
+          where: { nomRole: 'ADMIN' }
+        });
+
+        if (adminRole) {
+          const admins = await prisma.user.findMany({
+            where: { roleId: adminRole.id }
+          });
+
+          for (const admin of admins) {
+            try {
+              await sendNotificationEmail(
+                admin.email,
+                `${admin.nom} ${admin.prenom}`,
+                notificationMessage,
+                successCount > 0 ? 'success' : 'warning'
+              );
+            } catch (error) {
+              console.error(`Erreur lors de l'envoi d'email à ${admin.email}:`, error);
+            }
+          }
+        }
+
+        console.log('✅ Notifications email envoyées');
+      } catch (error) {
+        console.error('❌ Erreur lors de l\'envoi des notifications:', error);
+      }
     });
 
   } catch (error) {
