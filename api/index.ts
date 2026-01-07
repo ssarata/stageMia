@@ -18,6 +18,7 @@ const allowedOrigins = [
   'http://localhost:3002',
   'http://localhost:4000',
   'https://stage-mia-gnru.vercel.app',
+  'https://maibfparterns.mia-bf.org',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
