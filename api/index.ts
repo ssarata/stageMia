@@ -11,36 +11,14 @@ dotenv.config();
 const app: Application = express();
 const httpServer = createServer(app);
 
-// Configuration CORS
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3001',
-  'http://localhost:3002',
-  'http://localhost:4000',
-  'https://stage-mia-gnru.vercel.app',
-  'https://maibfparterns.mia-bf.org',
-  process.env.FRONTEND_URL
-].filter(Boolean);
-
+// Configuration CORS - Mode permissif pour débogage
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permettre les requêtes sans origin (comme Postman, curl)
-    if (!origin) return callback(null, true);
-
-    // Accepter les domaines dans la liste ou ceux qui contiennent vercel.app ou mia-bf.org
-    if (allowedOrigins.indexOf(origin) !== -1 ||
-        origin.includes('vercel.app') ||
-        origin.includes('mia-bf.org')) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Accepter toutes les origines temporairement
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['Content-Length', 'X-JSON'],
-  maxAge: 86400 // 24 heures
+  maxAge: 86400
 }));
 
 // Middleware pour parser le JSON
