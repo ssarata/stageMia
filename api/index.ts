@@ -27,7 +27,10 @@ app.use(cors({
     // Permettre les requêtes sans origin (comme Postman, curl)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.some(allowed => origin.includes('vercel.app'))) {
+    // Accepter les domaines dans la liste ou ceux qui contiennent vercel.app ou mia-bf.org
+    if (allowedOrigins.indexOf(origin) !== -1 ||
+        origin.includes('vercel.app') ||
+        origin.includes('mia-bf.org')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
