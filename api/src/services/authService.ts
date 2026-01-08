@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../utils/prismaClient.js';
-import emailService from './nodemailerService.js';
+import emailService from './emailService.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'votre_clé_secrète';
 if (JWT_SECRET === 'votre_clé_secrète') {

@@ -2,8 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
-import { sendContactByEmail, isEmailConfigured } from '../utils/nodemailerService.js';
-import { sendNotificationEmail } from '../services/nodemailerService.js';
+import { sendContactByEmail, isEmailConfigured, sendNotificationEmail } from '../services/emailService.js';
 
 // Partager un contact avec un autre utilisateur
 export const shareContact = async (req: AuthRequest, res: Response): Promise<void> => {

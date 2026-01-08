@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
-import { sendNotificationEmail } from '../services/nodemailerService.js';
+import { sendNotificationEmail } from '../services/emailService.js';
 
 interface ContactRow {
   nom: string;

@@ -384,9 +384,71 @@ export const sendNotificationEmail = async (
   }
 };
 
+// Fonction pour vérifier si les variables Brevo sont configurées
+export const isEmailConfigured = (): boolean => {
+  return !!process.env.BREVO_API_KEY;
+};
+
+// Fonction pour envoyer un contact par email
+export const sendContactByEmail = async (
+  recipientEmail: string,
+  contact: any,
+  senderName: string
+): Promise<void> => {
+  const contactHTML = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .header { background-color: #4CAF50; color: white; padding: 15px; border-radius: 8px 8px 0 0; text-align: center; }
+        .content { padding: 20px; background-color: #f9f9f9; }
+        .contact-info { background-color: white; padding: 15px; border-radius: 5px; margin-top: 10px; }
+        .contact-info p { margin: 8px 0; }
+        .label { font-weight: bold; color: #4CAF50; }
+        .footer { text-align: center; padding: 15px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h2>📇 Contact partagé via MIA</h2>
+        </div>
+        <div class="content">
+          <p>Bonjour,</p>
+          <p><strong>${senderName}</strong> a partagé avec vous les informations de contact suivantes :</p>
+
+          <div class="contact-info">
+            <p><span class="label">Nom complet :</span> ${contact.nom} ${contact.prenom}</p>
+            ${contact.telephone ? `<p><span class="label">Téléphone :</span> ${contact.telephone}</p>` : ''}
+            ${contact.email ? `<p><span class="label">Email :</span> ${contact.email}</p>` : ''}
+            ${contact.organisation ? `<p><span class="label">Organisation :</span> ${contact.organisation}</p>` : ''}
+            ${contact.fonction ? `<p><span class="label">Fonction :</span> ${contact.fonction}</p>` : ''}
+            ${contact.adresse ? `<p><span class="label">Adresse :</span> ${contact.adresse}</p>` : ''}
+            ${contact.notes ? `<p><span class="label">Notes :</span> ${contact.notes}</p>` : ''}
+          </div>
+        </div>
+        <div class="footer">
+          <p>Envoyé via MIA - Gestion de Contacts</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  await sendEmail({
+    to: recipientEmail,
+    subject: `Contact partagé : ${contact.nom} ${contact.prenom}`,
+    html: contactHTML,
+  });
+};
+
 export default {
   sendEmail,
   sendPasswordResetEmail,
   sendPasswordResetConfirmationEmail,
   sendNotificationEmail,
+  sendContactByEmail,
+  isEmailConfigured,
 };

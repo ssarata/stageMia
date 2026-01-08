@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import prisma from '../utils/prismaClient.js';
 import { AuthRequest } from '../middlewares/auth.js';
 import { notifyAdmins } from '../utils/notifyAdmins.js';
-import { sendNotificationEmail } from '../services/nodemailerService.js';
+import { sendNotificationEmail } from '../services/emailService.js';
 
 // Obtenir tous les contacts de l'utilisateur connecté
 export const getAllContacts = async (req: AuthRequest, res: Response): Promise<void> => {
