@@ -12,11 +12,9 @@ export const getAllContacts = async (req: AuthRequest, res: Response): Promise<v
       return;
     }
 
-    // MIA peut voir tous les contacts, les autres voient uniquement les leurs
-    const canSeeAllContacts = req.user.roleName === 'MIA';
-
+    // Tous les utilisateurs peuvent voir tous les contacts
     const contacts = await prisma.contact.findMany({
-      where: canSeeAllContacts ? {} : { userId: req.user.id },
+      where: {},
       include: {
         categorie: true,
         user: {
@@ -48,15 +46,10 @@ export const getContactById = async (req: AuthRequest, res: Response): Promise<v
     }
 
     const { id } = req.params;
-    const canSeeAllContacts = req.user.roleName === 'MIA';
 
+    // Tous les utilisateurs peuvent voir tous les contacts
     const contact = await prisma.contact.findFirst({
-      where: canSeeAllContacts
-        ? { id: parseInt(id) }
-        : {
-            id: parseInt(id),
-            userId: req.user.id
-          },
+      where: { id: parseInt(id) },
       include: {
         categorie: true,
         user: {
