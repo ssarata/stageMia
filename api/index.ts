@@ -11,9 +11,9 @@ dotenv.config();
 const app: Application = express();
 const httpServer = createServer(app);
 
-// Configuration CORS - Mode permissif pour débogage
+// Configuration CORS - Accepter toutes les origines
 app.use(cors({
-  origin: true, // Accepter toutes les origines temporairement
+  origin: (origin, callback) => callback(null, true),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
