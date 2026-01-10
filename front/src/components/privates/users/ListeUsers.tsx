@@ -114,7 +114,6 @@ const ListeUsers = () => {
         visibleColumns.actions && {
           headerName: "Actions",
           cellRenderer: createActionCellRenderer<Useraffiche>({
-            onEdit: hasPermission('user.update') ? (data) => handleEdit(data) : undefined,
             onDelete: hasPermission('user.delete') ? (data) => openConfirmModal(data.id) : undefined,
             customActions: isAdmin ? [
               {
