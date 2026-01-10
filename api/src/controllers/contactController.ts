@@ -253,17 +253,32 @@ export const deleteContact = async (req: AuthRequest, res: Response): Promise<vo
 
     const { id } = req.params;
 
-    const result = await prisma.contact.deleteMany({
-      where: {
-        id: parseInt(id),
-        userId: req.user.id
-      }
+    // Vérifier si le contact existe
+    const existingContact = await prisma.contact.findUnique({
+      where: { id: parseInt(id) }
     });
 
-    if (result.count === 0) {
+    if (!existingContact) {
       res.status(404).json({ error: 'Contact introuvable' });
       return;
     }
+
+    // Vérifier les permissions : seul le propriétaire, ADMIN ou MIA peuvent supprimer
+    const canDelete =
+      existingContact.userId === req.user.id ||
+      req.user.roleName === 'ADMIN' ||
+      req.user.roleName === 'MIA';
+
+    if (!canDelete) {
+      res.status(403).json({
+        error: 'Vous ne pouvez pas supprimer ce contact. Seul le créateur, un administrateur ou MIA peut le supprimer.'
+      });
+      return;
+    }
+
+    await prisma.contact.delete({
+      where: { id: parseInt(id) }
+    });
 
     res.json({ message: 'Contact supprimé avec succès' });
   } catch (error) {

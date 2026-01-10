@@ -10,6 +10,7 @@ import { Upload, FileSpreadsheet, AlertCircle, AlertTriangle } from "lucide-reac
 import { useState } from "react";
 import axios from "axios";
 import Cookies from "js-cookie";
+import { useNavigate } from "@tanstack/react-router";
 
 interface ImportContactsProps {
   open: boolean;
@@ -22,6 +23,7 @@ const ImportContacts = ({ open, onOpenChange }: ImportContactsProps) => {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [warnings, setWarnings] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setError("");
@@ -102,7 +104,7 @@ const ImportContacts = ({ open, onOpenChange }: ImportContactsProps) => {
       // Rafraîchir la liste des contacts après un délai
       setTimeout(() => {
         onOpenChange(false);
-        window.location.reload();
+        navigate({ to: '/dashboard/contact' });
       }, 3000);
 
     } catch (error: any) {
